@@ -6,7 +6,7 @@ import {
 } from "@gorhom/bottom-sheet";
 import { useThemeColor } from "heroui-native";
 import { forwardRef, type ReactNode } from "react";
-import { Pressable, StyleSheet, Switch, Text, View } from "react-native";
+import { Platform, Pressable, StyleSheet, Switch, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { DifficultyBar } from "@/components/skate/difficulty-bar";
@@ -62,7 +62,11 @@ export const SettingsSheet = forwardRef<BottomSheetModal>(function SettingsSheet
       handleIndicatorStyle={{ backgroundColor: muted }}
     >
       <BottomSheetScrollView
-        contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 28 }]}
+        contentContainerStyle={[
+          styles.content,
+          Platform.OS === "web" && styles.contentWeb,
+          { paddingBottom: insets.bottom + 28 },
+        ]}
       >
         <Text style={[styles.heading, { color: foreground }]}>Settings</Text>
 
@@ -141,6 +145,11 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: 20,
     paddingTop: 4,
+  },
+  contentWeb: {
+    width: "100%",
+    maxWidth: 480,
+    alignSelf: "center",
   },
   heading: {
     fontSize: 22,
