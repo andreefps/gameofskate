@@ -1,0 +1,3 @@
+{
+  "extends": "@gameofskate/config/tsconfig.base.json"
+}
