@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "npx expo export -p web",
-  "outputDirectory": "dist",
+  "buildCommand": "cd apps/native && npx expo export -p web",
+  "outputDirectory": "apps/native/dist",
   "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
 }
