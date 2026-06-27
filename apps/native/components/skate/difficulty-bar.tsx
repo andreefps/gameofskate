@@ -1,4 +1,3 @@
-import * as Haptics from "expo-haptics";
 import { useThemeColor } from "heroui-native";
 import { useEffect, useRef, useState } from "react";
 import { StyleSheet, Text, View, type LayoutChangeEvent } from "react-native";
@@ -10,6 +9,8 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { runOnJS } from "react-native-worklets";
+
+import { selectionTick } from "@/lib/haptics";
 
 const THUMB = 26;
 const TRACK_H = 6;
@@ -63,7 +64,7 @@ export function DifficultyBar({ labels, value, onChange, hapticsEnabled }: Props
   };
 
   const commit = (index: number) => {
-    if (hapticsEnabled) void Haptics.selectionAsync();
+    if (hapticsEnabled) selectionTick();
     onChange(index);
   };
 

@@ -1,8 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
-import * as Haptics from "expo-haptics";
 import { useThemeColor } from "heroui-native";
 import { Pressable, StyleSheet, Text } from "react-native";
 
+import { selectionTick } from "@/lib/haptics";
 import type { Domain } from "@/lib/skate/types";
 
 type Props = {
@@ -20,9 +20,7 @@ export function DomainPill({ domain, onToggle, hapticsEnabled }: Props) {
       style={[styles.pill, { backgroundColor: surface }]}
       hitSlop={8}
       onPress={() => {
-        if (hapticsEnabled) {
-          void Haptics.selectionAsync();
-        }
+        if (hapticsEnabled) selectionTick();
         onToggle();
       }}
     >

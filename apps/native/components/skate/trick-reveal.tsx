@@ -1,4 +1,3 @@
-import * as Haptics from "expo-haptics";
 import { useThemeColor } from "heroui-native";
 import { useEffect, useRef, useState } from "react";
 import { StyleSheet, View } from "react-native";
@@ -12,6 +11,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
+import { impactLight, notifySuccess } from "@/lib/haptics";
 import type { Trick } from "@/lib/skate/types";
 
 const FLICKER_TICKS = 7;
@@ -66,9 +66,7 @@ export function TrickReveal({ trick, token, flickerNames, hapticsEnabled }: Prop
           withSpring(1, { damping: 9, stiffness: 170 }),
         );
       }
-      if (hapticsEnabled) {
-        void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      }
+      if (hapticsEnabled) notifySuccess();
     };
 
     if (reduceMotion || flickerNames.length < 2) {
@@ -91,9 +89,7 @@ export function TrickReveal({ trick, token, flickerNames, hapticsEnabled }: Prop
       }
       const name = flickerNames[Math.floor(Math.random() * flickerNames.length)] ?? trick.name;
       setDisplay(name);
-      if (hapticsEnabled) {
-        void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      }
+      if (hapticsEnabled) impactLight();
     }, FLICKER_INTERVAL_MS);
 
     return () => {

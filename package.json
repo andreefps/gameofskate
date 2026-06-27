@@ -11,7 +11,8 @@
     "build": "turbo build",
     "check-types": "turbo check-types",
     "test": "turbo test",
-    "dev:native": "turbo -F native dev"
+    "dev:native": "turbo -F native dev",
+    "dev:web": "pnpm -F native web"
   },
   "dependencies": {
     "@gameofskate/env": "workspace:*",

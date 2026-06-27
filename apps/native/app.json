@@ -4,7 +4,13 @@
     "userInterfaceStyle": "automatic",
     "orientation": "default",
     "web": {
-      "bundler": "metro"
+      "bundler": "metro",
+      "output": "single",
+      "name": "Game of SKATE",
+      "shortName": "SKATE",
+      "description": "A fast, minimal trick generator for the Game of SKATE.",
+      "themeColor": "#000000",
+      "favicon": "./assets/images/favicon.png"
     },
     "name": "gameofskate",
     "slug": "gameofskate",

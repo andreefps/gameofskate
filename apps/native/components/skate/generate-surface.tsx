@@ -1,6 +1,7 @@
-import * as Haptics from "expo-haptics";
 import type { ReactNode } from "react";
-import { Pressable, StyleSheet } from "react-native";
+import { Platform, Pressable, StyleSheet } from "react-native";
+
+import { impactMedium } from "@/lib/haptics";
 
 type Props = {
   onRoll: () => void;
@@ -16,12 +17,10 @@ type Props = {
 export function GenerateSurface({ onRoll, hapticsEnabled, children }: Props) {
   return (
     <Pressable
-      style={styles.surface}
+      style={[styles.surface, Platform.OS === "web" && styles.web]}
       hitSlop={28}
       onPress={() => {
-        if (hapticsEnabled) {
-          void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-        }
+        if (hapticsEnabled) impactMedium();
         onRoll();
       }}
     >
@@ -37,5 +36,9 @@ const styles = StyleSheet.create({
     paddingVertical: 28,
     paddingHorizontal: 28,
     borderRadius: 28,
+  },
+  web: {
+    cursor: "pointer",
+    userSelect: "none",
   },
 });

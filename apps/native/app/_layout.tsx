@@ -6,6 +6,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
+import { AppFrame } from "@/components/app-frame";
 import { AppThemeProvider } from "@/contexts/app-theme-context";
 import { SettingsProvider } from "@/stores/settings";
 
@@ -20,13 +21,15 @@ export default function Layout() {
         <KeyboardProvider>
           <AppThemeProvider>
             <HeroUINativeProvider>
-              <SettingsProvider>
-                <BottomSheetModalProvider>
-                  <Stack screenOptions={{ headerShown: false }}>
-                    <Stack.Screen name="index" />
-                  </Stack>
-                </BottomSheetModalProvider>
-              </SettingsProvider>
+              <AppFrame>
+                <SettingsProvider>
+                  <BottomSheetModalProvider>
+                    <Stack screenOptions={{ headerShown: false }}>
+                      <Stack.Screen name="index" />
+                    </Stack>
+                  </BottomSheetModalProvider>
+                </SettingsProvider>
+              </AppFrame>
             </HeroUINativeProvider>
           </AppThemeProvider>
         </KeyboardProvider>
