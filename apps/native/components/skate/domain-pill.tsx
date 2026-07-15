@@ -1,7 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useThemeColor } from "heroui-native";
-import { Pressable, StyleSheet, Text } from "react-native";
+import { StyleSheet, Text } from "react-native";
 
+import { ScalePressable } from "@/components/scale-pressable";
 import { selectionTick } from "@/lib/haptics";
 import type { Domain } from "@/lib/skate/types";
 
@@ -16,9 +17,12 @@ export function DomainPill({ domain, onToggle, hapticsEnabled }: Props) {
   const [foreground, surface] = useThemeColor(["foreground", "surface-secondary"]);
 
   return (
-    <Pressable
+    <ScalePressable
       style={[styles.pill, { backgroundColor: surface }]}
       hitSlop={8}
+      accessibilityRole="button"
+      accessibilityLabel="Switch trick mode"
+      accessibilityValue={{ text: domain.label }}
       onPress={() => {
         if (hapticsEnabled) selectionTick();
         onToggle();
@@ -26,7 +30,7 @@ export function DomainPill({ domain, onToggle, hapticsEnabled }: Props) {
     >
       <Text style={[styles.label, { color: foreground }]}>{domain.label}</Text>
       <Ionicons name="swap-horizontal" size={15} color={foreground} />
-    </Pressable>
+    </ScalePressable>
   );
 }
 
@@ -35,7 +39,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-    paddingHorizontal: 14,
+    paddingLeft: 14,
+    paddingRight: 12,
     paddingVertical: 7,
     borderRadius: 999,
   },

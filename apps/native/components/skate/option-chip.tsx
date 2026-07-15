@@ -1,5 +1,7 @@
 import { useThemeColor } from "heroui-native";
-import { Pressable, StyleSheet, Text } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
+
+import { ScalePressable } from "@/components/scale-pressable";
 
 type Props = {
   label: string;
@@ -17,16 +19,25 @@ export function OptionChip({ label, selected, onPress }: Props) {
   ]);
 
   return (
-    <Pressable
+    <ScalePressable
       onPress={onPress}
-      style={[styles.chip, { backgroundColor: selected ? foreground : surface }]}
+      style={styles.hitTarget}
+      accessibilityRole="checkbox"
+      accessibilityState={{ checked: selected }}
+      accessibilityLabel={label}
     >
-      <Text style={[styles.label, { color: selected ? background : muted }]}>{label}</Text>
-    </Pressable>
+      <View style={[styles.chip, { backgroundColor: selected ? foreground : surface }]}>
+        <Text style={[styles.label, { color: selected ? background : muted }]}>{label}</Text>
+      </View>
+    </ScalePressable>
   );
 }
 
 const styles = StyleSheet.create({
+  hitTarget: {
+    minHeight: 44,
+    justifyContent: "center",
+  },
   chip: {
     paddingHorizontal: 14,
     paddingVertical: 9,

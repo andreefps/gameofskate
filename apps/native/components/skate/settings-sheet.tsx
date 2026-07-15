@@ -6,9 +6,10 @@ import {
 } from "@gorhom/bottom-sheet";
 import { useThemeColor } from "heroui-native";
 import { forwardRef, type ReactNode } from "react";
-import { Platform, Pressable, StyleSheet, Switch, Text, View } from "react-native";
+import { Platform, StyleSheet, Switch, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { ScalePressable } from "@/components/scale-pressable";
 import { DifficultyBar } from "@/components/skate/difficulty-bar";
 import { OptionChip } from "@/components/skate/option-chip";
 import { TIER_LABEL } from "@/components/skate/tier-label";
@@ -116,26 +117,36 @@ export const SettingsSheet = forwardRef<BottomSheetModal>(function SettingsSheet
           ))}
         </Section>
 
-        <View style={[styles.row, { borderTopColor: surface }]}>
+        <ScalePressable
+          static
+          style={[styles.row, { borderTopColor: surface }]}
+          onPress={() => dispatch({ type: "toggleHaptics" })}
+          accessibilityRole="switch"
+          accessibilityState={{ checked: settings.hapticsEnabled }}
+          accessibilityLabel="Haptics"
+        >
           <Text style={[styles.rowLabel, { color: foreground }]}>Haptics</Text>
           <Switch
             value={settings.hapticsEnabled}
             onValueChange={() => dispatch({ type: "toggleHaptics" })}
             trackColor={{ true: accent, false: surface }}
+            pointerEvents="none"
+            accessible={false}
           />
-        </View>
+        </ScalePressable>
 
         <View style={[styles.row, { borderTopColor: surface }]}>
           <Text style={[styles.rowLabel, { color: foreground }]}>Theme</Text>
-          <ThemeToggle />
+          <ThemeToggle hapticsEnabled={settings.hapticsEnabled} />
         </View>
 
-        <Pressable
+        <ScalePressable
           onPress={() => dispatch({ type: "reset" })}
           style={[styles.reset, { backgroundColor: surface }]}
+          accessibilityRole="button"
         >
           <Text style={[styles.resetLabel, { color: muted }]}>Reset to defaults</Text>
-        </Pressable>
+        </ScalePressable>
       </BottomSheetScrollView>
     </BottomSheetModal>
   );
@@ -175,7 +186,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingVertical: 14,
+    minHeight: 56,
+    paddingVertical: 6,
     borderTopWidth: StyleSheet.hairlineWidth,
   },
   rowLabel: {

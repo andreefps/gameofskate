@@ -14,7 +14,7 @@ import { selectionTick } from "@/lib/haptics";
 
 const THUMB = 26;
 const TRACK_H = 6;
-const HIT_H = 40;
+const HIT_H = 44;
 // Magnetic snap: quick, no overshoot/jiggle.
 const SNAP = { duration: 150, easing: Easing.out(Easing.cubic) };
 
