@@ -1,8 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useThemeColor } from "heroui-native";
 import { StyleSheet, Text } from "react-native";
 
 import { ScalePressable } from "@/components/scale-pressable";
+import { useAppTheme } from "@/contexts/app-theme-context";
 import { selectionTick } from "@/lib/haptics";
 import type { Domain } from "@/lib/skate/types";
 
@@ -14,11 +14,17 @@ type Props = {
 
 /** Tappable pill showing the active domain; tap switches between domains. */
 export function DomainPill({ domain, onToggle, hapticsEnabled }: Props) {
-  const [foreground, surface] = useThemeColor(["foreground", "surface-secondary"]);
+  const { isLight } = useAppTheme();
 
   return (
     <ScalePressable
-      style={[styles.pill, { backgroundColor: surface }]}
+      style={[
+        styles.pill,
+        {
+          backgroundColor: "#F6C84C",
+          boxShadow: isLight ? "3px 4px 0 #17212B" : "3px 4px 0 rgba(255, 247, 223, 0.22)",
+        },
+      ]}
       hitSlop={8}
       accessibilityRole="button"
       accessibilityLabel="Switch trick mode"
@@ -28,8 +34,9 @@ export function DomainPill({ domain, onToggle, hapticsEnabled }: Props) {
         onToggle();
       }}
     >
-      <Text style={[styles.label, { color: foreground }]}>{domain.label}</Text>
-      <Ionicons name="swap-horizontal" size={15} color={foreground} />
+      <Text style={styles.prefix}>SPOT:</Text>
+      <Text style={styles.label}>{domain.label}</Text>
+      <Ionicons name="swap-horizontal" size={17} color="#17212B" />
     </ScalePressable>
   );
 }
@@ -38,14 +45,25 @@ const styles = StyleSheet.create({
   pill: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
-    paddingLeft: 14,
+    gap: 7,
+    minHeight: 42,
+    paddingLeft: 13,
     paddingRight: 12,
-    paddingVertical: 7,
-    borderRadius: 999,
+    paddingVertical: 9,
+    borderRadius: 10,
+    transform: [{ rotate: "-1.5deg" }],
+  },
+  prefix: {
+    color: "#17212B",
+    fontFamily: "DMSans_700Bold",
+    fontSize: 8,
+    letterSpacing: 1.2,
   },
   label: {
-    fontSize: 14,
-    fontWeight: "600",
+    color: "#17212B",
+    fontFamily: "BarlowCondensed_800ExtraBold",
+    fontSize: 17,
+    letterSpacing: 0.5,
+    textTransform: "uppercase",
   },
 });

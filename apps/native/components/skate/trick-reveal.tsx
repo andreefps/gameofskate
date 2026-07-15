@@ -1,4 +1,3 @@
-import { useThemeColor } from "heroui-native";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import Animated, {
@@ -191,12 +190,6 @@ function SlotReel({
 
 export function TrickReveal({ trick, token, candidates, hapticsEnabled }: Props) {
   const reduceMotion = useReducedMotion();
-  const [foreground, muted, surface, accent] = useThemeColor([
-    "foreground",
-    "muted",
-    "surface-secondary",
-    "accent",
-  ]);
   const resultOpacity = useSharedValue(0);
   const previousToken = useRef<number | null>(null);
 
@@ -238,17 +231,31 @@ export function TrickReveal({ trick, token, candidates, hapticsEnabled }: Props)
   }));
 
   return (
-    <View style={styles.wrap} pointerEvents="none">
-      <Animated.View style={[styles.result, resultStyle]}>
-        {trick ? (
+    <View style={styles.wrap}>
+      {trick ? (
+        <Animated.View style={[styles.result, resultStyle]}>
           <>
-            <Text style={[styles.resultName, { color: foreground }]} accessibilityLiveRegion="polite">
+            <Text style={styles.resultEyebrow}>YOU'RE UP</Text>
+            <Text
+              style={styles.resultName}
+              accessibilityLiveRegion="polite"
+              numberOfLines={2}
+              adjustsFontSizeToFit
+              minimumFontScale={0.7}
+            >
               {trick.name}
             </Text>
-            <Text style={[styles.tier, { color: accent }]}>{TIER_LABEL[tierOf(trick.difficulty)]}</Text>
+            <View style={styles.tierSticker}>
+              <Text style={styles.tier}>{TIER_LABEL[tierOf(trick.difficulty)]}</Text>
+            </View>
           </>
-        ) : null}
-      </Animated.View>
+        </Animated.View>
+      ) : (
+        <View style={styles.result}>
+          <Text style={styles.promptKicker}>READY WHEN YOU ARE</Text>
+          <Text style={styles.prompt}>Tap the button.{"\n"}Take the set.</Text>
+        </View>
+      )}
 
       <View style={styles.reels} accessibilityLabel={trick?.name}>
         {SLOT_CONFIG.map((slot, index) => {
@@ -262,9 +269,9 @@ export function TrickReveal({ trick, token, candidates, hapticsEnabled }: Props)
               settleRank={stopOrder.indexOf(index)}
               token={token}
               hapticsEnabled={hapticsEnabled && !reduceMotion}
-              foreground={foreground}
-              muted={muted}
-              surface={surface}
+              foreground="#17212B"
+              muted="#F6C84C"
+              surface="#FFF7DF"
               widthStyle={slot.widthStyle}
               animate={trick !== null}
             />
@@ -280,27 +287,30 @@ const styles = StyleSheet.create({
     width: "100%",
     maxWidth: 360,
     alignItems: "center",
+    pointerEvents: "none",
   },
   reels: {
     width: "100%",
     flexDirection: "row",
     alignItems: "flex-end",
-    gap: 6,
+    gap: 7,
+    paddingHorizontal: 2,
   },
   reelColumn: {
     gap: 6,
   },
   reelLabel: {
+    fontFamily: "DMSans_700Bold",
     fontSize: 9,
-    fontWeight: "700",
-    letterSpacing: 0.8,
+    letterSpacing: 1.2,
     textAlign: "center",
     textTransform: "uppercase",
   },
   reelWindow: {
     height: REEL_HEIGHT,
     overflow: "hidden",
-    borderRadius: 14,
+    borderRadius: 10,
+    boxShadow: "inset 0 0 0 1px rgba(23, 33, 43, 0.12), 0 3px 0 rgba(0, 0, 0, 0.28)",
   },
   reelItem: {
     height: REEL_HEIGHT,
@@ -309,28 +319,64 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   reelValue: {
+    fontFamily: "BarlowCondensed_800ExtraBold",
     fontSize: 18,
-    fontWeight: "800",
-    letterSpacing: -0.2,
+    letterSpacing: 0.1,
     textAlign: "center",
+    fontVariant: ["tabular-nums"],
   },
   result: {
-    minHeight: 72,
-    marginBottom: 16,
+    minHeight: 148,
+    width: "100%",
+    marginBottom: 20,
     alignItems: "center",
-    justifyContent: "flex-end",
+    justifyContent: "center",
+  },
+  resultEyebrow: {
+    marginBottom: 4,
+    color: "#F6C84C",
+    fontFamily: "DMSans_700Bold",
+    fontSize: 9,
+    letterSpacing: 2.1,
   },
   resultName: {
-    fontSize: 28,
-    fontWeight: "800",
-    letterSpacing: -0.4,
+    maxWidth: 320,
+    color: "#FFF7DF",
+    fontFamily: "BarlowCondensed_800ExtraBold",
+    fontSize: 39,
+    lineHeight: 40,
+    letterSpacing: -0.2,
     textAlign: "center",
+    textTransform: "uppercase",
+  },
+  tierSticker: {
+    marginTop: 10,
+    paddingHorizontal: 11,
+    paddingVertical: 4,
+    backgroundColor: "#F15B45",
+    transform: [{ rotate: "-2deg" }],
   },
   tier: {
-    marginTop: 5,
-    fontSize: 11,
-    fontWeight: "700",
-    letterSpacing: 0.9,
+    color: "#FFF7DF",
+    fontFamily: "DMSans_700Bold",
+    fontSize: 9,
+    letterSpacing: 1.2,
+    textTransform: "uppercase",
+  },
+  promptKicker: {
+    marginBottom: 8,
+    color: "#F6C84C",
+    fontFamily: "DMSans_700Bold",
+    fontSize: 9,
+    letterSpacing: 2,
+  },
+  prompt: {
+    color: "#FFF7DF",
+    fontFamily: "BarlowCondensed_800ExtraBold",
+    fontSize: 36,
+    lineHeight: 36,
+    letterSpacing: 0.2,
+    textAlign: "center",
     textTransform: "uppercase",
   },
 });

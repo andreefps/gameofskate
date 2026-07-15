@@ -21,10 +21,13 @@ import { useSettings } from "@/stores/settings";
 const SNAP_POINTS = ["90%"];
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
-  const muted = useThemeColor("muted");
+  const foreground = useThemeColor("foreground");
   return (
     <View style={styles.section}>
-      <Text style={[styles.sectionTitle, { color: muted }]}>{title}</Text>
+      <View style={styles.sectionHeading}>
+        <View style={styles.sectionMarker} />
+        <Text style={[styles.sectionTitle, { color: foreground }]}>{title}</Text>
+      </View>
       <View style={styles.chipRow}>{children}</View>
     </View>
   );
@@ -35,7 +38,7 @@ export const SettingsSheet = forwardRef<BottomSheetModal>(function SettingsSheet
   const insets = useSafeAreaInsets();
 
   const [background, foreground, muted, surface, accent] = useThemeColor([
-    "background",
+    "surface",
     "foreground",
     "muted",
     "surface-secondary",
@@ -59,17 +62,21 @@ export const SettingsSheet = forwardRef<BottomSheetModal>(function SettingsSheet
       snapPoints={SNAP_POINTS}
       enableDynamicSizing={false}
       backdropComponent={renderBackdrop}
-      backgroundStyle={{ backgroundColor: background }}
-      handleIndicatorStyle={{ backgroundColor: muted }}
+      backgroundStyle={[styles.sheet, { backgroundColor: background }]}
+      handleIndicatorStyle={{ backgroundColor: foreground, width: 44, opacity: 0.35 }}
     >
       <BottomSheetScrollView
-        contentContainerStyle={[
+        contentContainerStyle={StyleSheet.flatten([
           styles.content,
           Platform.OS === "web" && styles.contentWeb,
           { paddingBottom: insets.bottom + 28 },
-        ]}
+        ])}
       >
-        <Text style={[styles.heading, { color: foreground }]}>Settings</Text>
+        <View style={styles.titleBlock}>
+          <Text style={styles.headingKicker}>BUILD YOUR LINE</Text>
+          <Text style={[styles.heading, { color: foreground }]}>Tune the session</Text>
+          <Text style={[styles.headingBody, { color: muted }]}>Pick the spot, difficulty, and trick bag.</Text>
+        </View>
 
         <Section title="Mode">
           {DOMAIN_LIST.map((d) => (
@@ -83,7 +90,10 @@ export const SettingsSheet = forwardRef<BottomSheetModal>(function SettingsSheet
         </Section>
 
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: muted }]}>Difficulty</Text>
+          <View style={styles.sectionHeading}>
+            <View style={styles.sectionMarker} />
+            <Text style={[styles.sectionTitle, { color: foreground }]}>Difficulty</Text>
+          </View>
           <DifficultyBar
             labels={TIERS.map((t) => TIER_LABEL[t])}
             value={difficultyValue}
@@ -130,7 +140,8 @@ export const SettingsSheet = forwardRef<BottomSheetModal>(function SettingsSheet
             value={settings.hapticsEnabled}
             onValueChange={() => dispatch({ type: "toggleHaptics" })}
             trackColor={{ true: accent, false: surface }}
-            pointerEvents="none"
+            thumbColor="#FFF7DF"
+            style={styles.nonInteractive}
             accessible={false}
           />
         </ScalePressable>
@@ -142,10 +153,10 @@ export const SettingsSheet = forwardRef<BottomSheetModal>(function SettingsSheet
 
         <ScalePressable
           onPress={() => dispatch({ type: "reset" })}
-          style={[styles.reset, { backgroundColor: surface }]}
+          style={styles.reset}
           accessibilityRole="button"
         >
-          <Text style={[styles.resetLabel, { color: muted }]}>Reset to defaults</Text>
+          <Text style={styles.resetLabel}>Reset the setup</Text>
         </ScalePressable>
       </BottomSheetScrollView>
     </BottomSheetModal>
@@ -153,29 +164,65 @@ export const SettingsSheet = forwardRef<BottomSheetModal>(function SettingsSheet
 });
 
 const styles = StyleSheet.create({
+  sheet: {
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+  },
   content: {
-    paddingHorizontal: 20,
-    paddingTop: 4,
+    paddingHorizontal: 22,
+    paddingTop: 8,
   },
   contentWeb: {
     width: "100%",
-    maxWidth: 480,
+    maxWidth: 540,
     alignSelf: "center",
   },
+  titleBlock: {
+    marginBottom: 28,
+  },
+  headingKicker: {
+    alignSelf: "flex-start",
+    marginBottom: 7,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    backgroundColor: "#F6C84C",
+    color: "#17212B",
+    fontFamily: "DMSans_700Bold",
+    fontSize: 9,
+    letterSpacing: 1.7,
+    transform: [{ rotate: "-2deg" }],
+  },
   heading: {
-    fontSize: 22,
-    fontWeight: "800",
-    marginBottom: 16,
+    fontFamily: "BarlowCondensed_800ExtraBold",
+    fontSize: 38,
+    lineHeight: 40,
+    textTransform: "uppercase",
+  },
+  headingBody: {
+    marginTop: 2,
+    fontFamily: "DMSans_400Regular",
+    fontSize: 14,
   },
   section: {
-    marginBottom: 22,
+    marginBottom: 27,
+  },
+  sectionHeading: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 9,
+    marginBottom: 13,
+  },
+  sectionMarker: {
+    width: 15,
+    height: 5,
+    backgroundColor: "#F15B45",
+    transform: [{ rotate: "-9deg" }],
   },
   sectionTitle: {
-    fontSize: 12,
-    fontWeight: "700",
+    fontFamily: "DMSans_700Bold",
+    fontSize: 11,
     textTransform: "uppercase",
-    letterSpacing: 1,
-    marginBottom: 12,
+    letterSpacing: 1.4,
   },
   chipRow: {
     flexDirection: "row",
@@ -191,17 +238,24 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
   },
   rowLabel: {
+    fontFamily: "DMSans_600SemiBold",
     fontSize: 15,
-    fontWeight: "600",
   },
   reset: {
     marginTop: 18,
+    minHeight: 48,
     paddingVertical: 14,
-    borderRadius: 14,
+    borderRadius: 12,
     alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#17212B",
   },
   resetLabel: {
+    color: "#FFF7DF",
+    fontFamily: "DMSans_700Bold",
     fontSize: 14,
-    fontWeight: "600",
+  },
+  nonInteractive: {
+    pointerEvents: "none",
   },
 });

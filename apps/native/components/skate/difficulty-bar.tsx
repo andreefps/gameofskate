@@ -193,7 +193,7 @@ const styles = StyleSheet.create({
   },
   label: {
     flex: 1,
+    fontFamily: "DMSans_600SemiBold",
     fontSize: 11,
-    fontWeight: "600",
   },
 });

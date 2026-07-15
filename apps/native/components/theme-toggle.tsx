@@ -66,7 +66,7 @@ export function ThemeToggle({ hapticsEnabled }: Props) {
       accessibilityRole="button"
       accessibilityLabel={`Use ${isLight ? "dark" : "light"} theme`}
     >
-      <View style={styles.iconStack} pointerEvents="none">
+      <View style={styles.iconStack}>
         <Animated.View style={[styles.icon, moonStyle]}>
           <StyledIonicons name="moon" size={20} className="text-foreground" />
         </Animated.View>
@@ -88,6 +88,7 @@ const styles = StyleSheet.create({
   iconStack: {
     width: 20,
     height: 20,
+    pointerEvents: "none",
   },
   icon: {
     position: "absolute",

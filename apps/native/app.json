@@ -6,15 +6,18 @@
     "web": {
       "bundler": "metro",
       "output": "single",
-      "name": "Game of SKATE",
-      "shortName": "SKATE",
-      "description": "A fast, minimal trick generator for the Game of SKATE.",
-      "themeColor": "#000000",
+      "name": "Skate Call",
+      "shortName": "Skate Call",
+      "description": "Call the next trick for your Game of SKATE session.",
+      "themeColor": "#6EC9D5",
       "favicon": "./assets/images/favicon.png"
     },
-    "name": "gameofskate",
+    "name": "Skate Call",
     "slug": "gameofskate",
-    "plugins": ["expo-font"],
+    "plugins": [
+      "expo-font",
+      "expo-splash-screen"
+    ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true

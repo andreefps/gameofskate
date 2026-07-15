@@ -85,17 +85,33 @@ export default function GeneratorScreen() {
 
   return (
     <Container isScrollable={false} className="bg-background">
-      <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
+      <View style={styles.skyDecorations}>
+        <View style={[styles.sun, { backgroundColor: isLight ? "#F6C84C" : "#F15B45" }]} />
+        <View style={[styles.railLine, { borderColor: isLight ? "#17212B" : "#FFF7DF" }]} />
+        <Text style={[styles.skyScribble, { color: isLight ? "#17212B" : "#FFF7DF" }]}>////</Text>
+      </View>
+
+      <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
+        <View style={styles.brand}>
+          <Text style={[styles.brandKicker, { color: foreground }]}>TRICK GENERATOR</Text>
+          <Text style={[styles.brandName, { color: foreground }]}>SKATE CALL</Text>
+        </View>
         <ScalePressable
           onPress={openMenu}
-          style={styles.menuButton}
+          style={[
+            styles.menuButton,
+            {
+              backgroundColor: isLight ? "#FFF7DF" : "#22343D",
+              boxShadow: isLight
+                ? "3px 4px 0 #17212B"
+                : "3px 4px 0 rgba(255, 247, 223, 0.25)",
+            },
+          ]}
           accessibilityRole="button"
           accessibilityLabel="Open settings"
         >
-          <Ionicons name="options-outline" size={26} color={foreground} />
+          <Ionicons name="options" size={22} color={foreground} />
         </ScalePressable>
-        <DomainPill domain={domain} onToggle={toggleDomain} hapticsEnabled={settings.hapticsEnabled} />
-        <View style={styles.headerSpacer} />
       </View>
 
       <View style={styles.body}>
@@ -125,9 +141,10 @@ export default function GeneratorScreen() {
           <View
             style={[
               styles.generatorPosition,
-              { transform: [{ translateY: -Math.min(windowHeight * 0.15, 140) }] },
+              windowHeight < 700 && styles.generatorCompact,
             ]}
           >
+            <DomainPill domain={domain} onToggle={toggleDomain} hapticsEnabled={settings.hapticsEnabled} />
             <GenerateSurface
               onRoll={roll}
               hapticsEnabled={settings.hapticsEnabled}
@@ -141,6 +158,7 @@ export default function GeneratorScreen() {
                 hapticsEnabled={settings.hapticsEnabled}
               />
             </GenerateSurface>
+            <Text style={[styles.footerNote, { color: foreground }]}>SET IT. LAND IT. PASS IT.</Text>
           </View>
         )}
       </View>
@@ -155,26 +173,88 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingBottom: 4,
+    paddingHorizontal: 22,
+    paddingBottom: 10,
+    zIndex: 2,
+  },
+  brand: {
+    gap: 0,
+  },
+  brandKicker: {
+    fontFamily: "DMSans_700Bold",
+    fontSize: 9,
+    letterSpacing: 2.1,
+  },
+  brandName: {
+    marginTop: -2,
+    fontFamily: "BarlowCondensed_800ExtraBold",
+    fontSize: 28,
+    lineHeight: 30,
+    letterSpacing: 0.4,
   },
   menuButton: {
     width: 44,
     height: 44,
     alignItems: "center",
     justifyContent: "center",
+    borderRadius: 12,
   },
-  headerSpacer: {
-    width: 44,
+  skyDecorations: {
+    ...StyleSheet.absoluteFill,
+    overflow: "hidden",
+    pointerEvents: "none",
+  },
+  sun: {
+    position: "absolute",
+    width: 190,
+    height: 190,
+    borderRadius: 95,
+    right: -74,
+    top: -52,
+    opacity: 0.9,
+  },
+  railLine: {
+    position: "absolute",
+    width: 190,
+    height: 76,
+    left: -60,
+    bottom: -26,
+    borderWidth: 7,
+    borderRadius: 14,
+    transform: [{ rotate: "-9deg" }],
+    opacity: 0.13,
+  },
+  skyScribble: {
+    position: "absolute",
+    right: 24,
+    bottom: 34,
+    fontFamily: "BarlowCondensed_800ExtraBold",
+    fontSize: 26,
+    letterSpacing: -2,
+    opacity: 0.18,
+    transform: [{ rotate: "-10deg" }],
   },
   body: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
+    paddingHorizontal: 18,
+    paddingBottom: 28,
   },
   generatorPosition: {
     width: "100%",
     alignItems: "center",
+    gap: 14,
+    transform: [{ translateY: -10 }],
+  },
+  generatorCompact: {
+    transform: [{ translateY: 0 }, { scale: 0.9 }],
+  },
+  footerNote: {
+    fontFamily: "DMSans_700Bold",
+    fontSize: 9,
+    letterSpacing: 2.2,
+    opacity: 0.68,
   },
   empty: {
     alignItems: "center",
@@ -183,9 +263,10 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 22,
-    fontWeight: "700",
+    fontFamily: "BarlowCondensed_800ExtraBold",
   },
   emptyBody: {
+    fontFamily: "DMSans_400Regular",
     fontSize: 14,
     textAlign: "center",
   },
@@ -197,6 +278,6 @@ const styles = StyleSheet.create({
   },
   emptyButtonLabel: {
     fontSize: 14,
-    fontWeight: "600",
+    fontFamily: "DMSans_600SemiBold",
   },
 });
