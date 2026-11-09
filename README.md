@@ -1,7 +1,6 @@
 # Skate Call
 
-A fast, minimal trick caller for skateboarding's **Game of S.K.A.T.E.** Tap to
-get a trick, go skate it — or hand the phone around and let the app keep score.
+A fast, minimal skate trick generator. Pull out your phone, tap, go skate it.
 
 > React Native + Expo. iOS, Android and web. Offline, no backend, no accounts.
 
@@ -16,13 +15,12 @@ get a trick, go skate it — or hand the phone around and let the app keep score
 - **Flat & Ledge** — flatground tricks or grinds & slides, one tap to switch.
 - **No repeats** — recent tricks are kept out of the next few calls; harder
   tricks come up less often.
-- **Game of S.K.A.T.E.** — pass-and-play for 2–8 skaters: the setter sets, the
-  rest match, misses earn letters, last one standing wins. Undo, rematch, and a
-  solo mode (how many can you land before S.K.A.T.E.?). Games survive an app
-  reload. Web hotkeys: <kbd>L</kbd> landed, <kbd>M</kbd> missed, <kbd>U</kbd> undo.
-- **Trick bag** — a settings sheet with level presets (Beginner / Intermediate /
-  Advanced), stance and trick toggles, haptics, and System / Light / Dark theme.
-  Everything persists locally.
+- **Trick bag** — the level button in the corner opens presets (Beginner /
+  Intermediate / Advanced) and stance/trick toggles to filter what gets called,
+  plus haptics and System / Light / Dark theme. Everything persists locally.
+- **Extra: score keeper** — tucked at the bottom of the menu, a pass-and-play
+  Game of S.K.A.T.E. tracker (2–8 skaters or solo) with letters, undo and
+  rematch. Web hotkeys: <kbd>L</kbd> landed, <kbd>M</kbd> missed, <kbd>U</kbd> undo.
 
 ## Tech stack
 

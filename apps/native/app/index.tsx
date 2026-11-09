@@ -17,6 +17,8 @@ import { useGameTrick } from "@/hooks/use-game-trick";
 import { useHotkeys } from "@/hooks/use-hotkeys";
 import { useTrickCaller } from "@/hooks/use-trick-caller";
 import { confirmEndGame } from "@/lib/confirm";
+import { DOMAINS } from "@/lib/skate/domains";
+import { matchesPreset } from "@/lib/skate/preset";
 import type { DomainId } from "@/lib/skate/types";
 import { useGame } from "@/stores/game";
 import { useSettings } from "@/stores/settings";
@@ -29,6 +31,8 @@ const SPOTS: { value: DomainId; label: string }[] = [
 ];
 
 const WIDE_BREAKPOINT = 768;
+
+const LEVEL_LABEL = { beginner: "Beginner", intermediate: "Intermediate", advanced: "Advanced" } as const;
 
 export default function CallerScreen() {
   const { colors } = useTheme();
@@ -54,6 +58,14 @@ export default function CallerScreen() {
 
   const openSettings = () => sheetRef.current?.present();
   const openSetup = () => setupRef.current?.present();
+  const openGameFromSettings = () => {
+    sheetRef.current?.dismiss();
+    openSetup();
+  };
+  const domainSettings = settings.domains[settings.activeDomain];
+  const levelLabel = matchesPreset(DOMAINS[settings.activeDomain], domainSettings)
+    ? LEVEL_LABEL[domainSettings.difficulty]
+    : "Custom";
   const startGame = (names: string[]) => {
     setupRef.current?.dismiss();
     gameStore.start(names);
@@ -79,13 +91,12 @@ export default function CallerScreen() {
         ]}
       >
         <Header
+          levelLabel={levelLabel}
           onOpenSettings={openSettings}
           headerRight={
             game ? (
               <Button size="sm" variant="ghost" icon="close" label="End" onPress={() => confirmEndGame(gameStore.end)} />
-            ) : (
-              <Button size="sm" variant="secondary" icon="people-outline" label="Play S.K.A.T.E." onPress={openSetup} />
-            )
+            ) : null
           }
         />
 
@@ -162,7 +173,11 @@ export default function CallerScreen() {
         )}
       </View>
 
-      <SettingsSheet ref={sheetRef} onOpenChange={setSettingsOpen} />
+      <SettingsSheet
+        ref={sheetRef}
+        onOpenChange={setSettingsOpen}
+        onOpenGame={game ? undefined : openGameFromSettings}
+      />
       <GameSetupSheet
         ref={setupRef}
         initialNames={gameStore.lastNames}

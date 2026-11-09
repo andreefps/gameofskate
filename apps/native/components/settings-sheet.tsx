@@ -4,6 +4,7 @@ import {
   BottomSheetScrollView,
   type BottomSheetBackdropProps,
 } from "@gorhom/bottom-sheet";
+import { Ionicons } from "@expo/vector-icons";
 import { forwardRef, type ReactNode } from "react";
 import { Platform, StyleSheet, Text, View, type ViewStyle } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue, withSequence, withTiming } from "react-native-reanimated";
@@ -11,17 +12,18 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Button } from "@/components/ui/button";
 import { Chip } from "@/components/ui/chip";
+import { PressableScale } from "@/components/ui/pressable-scale";
 import { Segmented } from "@/components/ui/segmented";
 import { SwitchRow } from "@/components/ui/switch-row";
 import { impactLight } from "@/lib/haptics";
 import { DOMAINS } from "@/lib/skate/domains";
-import { baseTier, presetFor } from "@/lib/skate/preset";
+import { baseTier, matchesPreset } from "@/lib/skate/preset";
 import { buildPool } from "@/lib/skate/select";
 import { TIERS } from "@/lib/skate/tier";
 import type { BaseTrick, Stance, Tier } from "@/lib/skate/types";
 import { useSettings } from "@/stores/settings";
 import { type ThemePreference, useTheme } from "@/theme/theme-provider";
-import { fonts } from "@/theme/tokens";
+import { fonts, radius } from "@/theme/tokens";
 
 const SNAP_POINTS = ["90%"];
 
@@ -47,10 +49,6 @@ function baseLabel(base: BaseTrick): string {
   return base.dir === "required" ? `FS/BS ${base.name}` : base.name;
 }
 
-function sameSet<T>(a: T[], b: T[]): boolean {
-  return a.length === b.length && a.every((x) => b.includes(x));
-}
-
 function Section({ title, children }: { title: string; children: ReactNode }) {
   const { colors } = useTheme();
   return (
@@ -61,9 +59,16 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
   );
 }
 
-type Props = { onOpenChange?: (open: boolean) => void };
+type Props = {
+  onOpenChange?: (open: boolean) => void;
+  /** Opens the S.K.A.T.E. score keeper; omitted while a game is running. */
+  onOpenGame?: () => void;
+};
 
-export const SettingsSheet = forwardRef<BottomSheetModal, Props>(function SettingsSheet({ onOpenChange }, ref) {
+export const SettingsSheet = forwardRef<BottomSheetModal, Props>(function SettingsSheet(
+  { onOpenChange, onOpenGame },
+  ref,
+) {
   const { settings, dispatch } = useSettings();
   const { colors, preference, setPreference } = useTheme();
   const insets = useSafeAreaInsets();
@@ -73,8 +78,7 @@ export const SettingsSheet = forwardRef<BottomSheetModal, Props>(function Settin
   const ds = settings.domains[domainId];
   const poolCount = buildPool(domain, ds).length;
 
-  const preset = presetFor(domain, ds.difficulty);
-  const isCustom = !sameSet(preset.stances, ds.enabledStances) || !sameSet(preset.bases, ds.enabledBases);
+  const isCustom = !matchesPreset(domain, ds);
 
   const stanceShake = useSharedValue(0);
   const baseShake = useSharedValue(0);
@@ -206,6 +210,26 @@ export const SettingsSheet = forwardRef<BottomSheetModal, Props>(function Settin
           </View>
         </Section>
 
+        {onOpenGame ? (
+          <Section title="With friends">
+            <PressableScale
+              haptic
+              onPress={onOpenGame}
+              accessibilityRole="button"
+              accessibilityLabel="Keep score of a Game of S.K.A.T.E."
+              style={[styles.gameRow, { backgroundColor: colors.surface }]}
+            >
+              <View style={styles.gameText}>
+                <Text style={[styles.prefLabel, { color: colors.ink }]}>Game of S.K.A.T.E.</Text>
+                <Text style={[styles.gameHint, { color: colors.inkMuted }]}>
+                  Pass the phone around, the app keeps the letters.
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color={colors.inkMuted} />
+            </PressableScale>
+          </Section>
+        ) : null}
+
         <Button
           variant="ghost"
           label="Reset everything"
@@ -235,4 +259,7 @@ const styles = StyleSheet.create({
   themeRow: { gap: 10 },
   prefLabel: { fontFamily: fonts.bodySemi, fontSize: 16 },
   reset: { alignSelf: "flex-start" },
+  gameRow: { flexDirection: "row", alignItems: "center", gap: 12, padding: 16, borderRadius: radius.md },
+  gameText: { flex: 1, gap: 2 },
+  gameHint: { fontFamily: fonts.bodySemi, fontSize: 13 },
 });

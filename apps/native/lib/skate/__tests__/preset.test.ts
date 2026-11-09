@@ -47,3 +47,14 @@ describe("presetFor — grinds", () => {
     expect(p.bases).toEqual(DOMAINS.grinds.bases.map((b) => b.id));
   });
 });
+
+describe("matchesPreset", () => {
+  it("is true for a fresh preset and false after a toggle", async () => {
+    const { matchesPreset, presetFor } = await import("@/lib/skate/preset");
+    const { FLATGROUND } = await import("@/lib/skate/domains/flatground");
+    const p = presetFor(FLATGROUND, "intermediate");
+    const ds = { difficulty: "intermediate" as const, enabledStances: p.stances, enabledBases: p.bases };
+    expect(matchesPreset(FLATGROUND, ds)).toBe(true);
+    expect(matchesPreset(FLATGROUND, { ...ds, enabledBases: p.bases.slice(1) })).toBe(false);
+  });
+});

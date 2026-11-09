@@ -1,6 +1,6 @@
 import { STANCE_MOD } from "@/lib/skate/stance";
 import { TIERS } from "@/lib/skate/tier";
-import type { Domain, Stance, Tier } from "@/lib/skate/types";
+import type { Domain, DomainSettings, Stance, Tier } from "@/lib/skate/types";
 
 /** Which difficulty level a stance belongs to (regular/fakie=0, nollie=1, switch=2). */
 function stanceTierIndex(stance: Stance): number {
@@ -31,4 +31,11 @@ export function presetFor(domain: Domain, tier: Tier): Preset {
     stances: domain.stances.filter((s) => stanceTierIndex(s) <= level),
     bases: domain.bases.filter((b) => baseTierIndex(b.base) <= level).map((b) => b.id),
   };
+}
+
+/** True when the domain settings exactly match the preset of their difficulty level. */
+export function matchesPreset(domain: Domain, ds: DomainSettings): boolean {
+  const preset = presetFor(domain, ds.difficulty);
+  const same = <T>(a: T[], b: T[]): boolean => a.length === b.length && a.every((x) => b.includes(x));
+  return same(preset.stances, ds.enabledStances) && same(preset.bases, ds.enabledBases);
 }
