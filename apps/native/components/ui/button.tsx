@@ -10,7 +10,7 @@ type Props = {
   label: string;
   onPress?: () => void;
   variant?: "primary" | "secondary" | "ghost";
-  size?: "lg" | "md";
+  size?: "lg" | "md" | "sm";
   icon?: ComponentProps<typeof Ionicons>["name"];
   disabled?: boolean;
   /** Text color override (e.g. danger). */
@@ -34,6 +34,7 @@ export function Button({
 }: Props) {
   const { colors } = useTheme();
   const lg = size === "lg";
+  const sm = size === "sm";
 
   const bg =
     variant === "primary" ? colors.accent : variant === "secondary" ? colors.surface : "transparent";
@@ -49,13 +50,13 @@ export function Button({
       style={[
         styles.base,
         {
-          height: lg ? 64 : 48,
+          height: lg ? 64 : sm ? 44 : 48,
           backgroundColor: bg,
-          borderRadius: lg ? radius.md : radius.sm,
+          borderRadius: lg ? radius.md : sm ? radius.pill : radius.sm,
           borderWidth: variant === "secondary" ? StyleSheet.hairlineWidth * 2 : 0,
           borderColor: colors.line,
           opacity: disabled ? 0.4 : 1,
-          paddingHorizontal: lg ? 24 : 18,
+          paddingHorizontal: lg ? 24 : sm ? 14 : 18,
         },
         style,
       ]}
@@ -63,7 +64,7 @@ export function Button({
       {icon ? <Ionicons name={icon} size={lg ? 24 : 18} color={fg} /> : null}
       <Text
         style={[
-          lg ? styles.lg : styles.md,
+          lg ? styles.lg : sm ? styles.sm : styles.md,
           { color: fg },
         ]}
       >
@@ -76,5 +77,6 @@ export function Button({
 const styles = StyleSheet.create({
   base: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10 },
   lg: { fontFamily: fonts.display, fontSize: 24, letterSpacing: 0.5, textTransform: "uppercase" },
+  sm: { fontFamily: fonts.bodyBold, fontSize: 14 },
   md: { fontFamily: fonts.bodyBold, fontSize: 15 },
 });

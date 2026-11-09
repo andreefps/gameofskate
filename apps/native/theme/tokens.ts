@@ -7,6 +7,8 @@ export type Palette = {
   line: string;
   /** Very low-emphasis ink for placeholder display type. */
   ghost: string;
+  /** `ghost` for content sitting on an ink-filled surface. */
+  ghostOnInk: string;
   /** Elevated control surface (segmented thumb) — must contrast with surfaceAlt. */
   raised: string;
   accent: string;
@@ -24,6 +26,7 @@ export const light: Palette = {
   inkMuted: "#6E6A62",
   line: "rgba(18,18,17,0.10)",
   ghost: "rgba(18,18,17,0.18)",
+  ghostOnInk: "rgba(241,238,231,0.28)",
   raised: "#FFFFFF",
   accent: "#FF4F1A",
   accentInk: "#FFFFFF",
@@ -40,6 +43,7 @@ export const dark: Palette = {
   inkMuted: "#8F8B83",
   line: "rgba(241,238,231,0.10)",
   ghost: "rgba(241,238,231,0.16)",
+  ghostOnInk: "rgba(15,15,14,0.28)",
   raised: "#3B3A36",
   accent: "#FF5C2B",
   accentInk: "#0F0F0E",

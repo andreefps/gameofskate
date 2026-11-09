@@ -14,6 +14,10 @@ export type TrickCaller = {
   /** Previous tricks, most recent first (excludes current), max 5. */
   recent: Trick[];
   roll: () => void;
+  /** Roll without the haptic tick (game turns fire their own feedback). */
+  rollQuiet: () => void;
+  /** Show a specific pool trick with the reveal. Returns false if it is not in the pool. */
+  show: (id: string) => boolean;
   /** Increments on every roll; use as a React key to replay the reveal. */
   rollToken: number;
 };
@@ -39,15 +43,33 @@ export function useTrickCaller(): TrickCaller {
     setCurrent(pick(pool, [current.id, ...history.map((t) => t.id)]));
   }, [pool, current, history]);
 
-  const roll = () => {
+  const rollWith = (haptic: boolean) => {
     const recentIds = [current, ...history].filter((t): t is Trick => t !== null).map((t) => t.id);
     const next = pick(pool, recentIds);
     if (!next) return;
-    if (settings.hapticsEnabled) impactMedium();
+    if (haptic && settings.hapticsEnabled) impactMedium();
     if (current) setHistory([current, ...history].slice(0, RECENT_WINDOW - 1));
     setCurrent(next);
     setRollToken((t) => t + 1);
   };
 
-  return { pool, current, recent: history.slice(0, RECENT_SHOWN), roll, rollToken };
+  const show = (id: string) => {
+    const trick = pool.find((t) => t.id === id);
+    if (!trick) return false;
+    if (current?.id === trick.id) return true;
+    if (current) setHistory([current, ...history].slice(0, RECENT_WINDOW - 1));
+    setCurrent(trick);
+    setRollToken((t) => t + 1);
+    return true;
+  };
+
+  return {
+    pool,
+    current,
+    recent: history.slice(0, RECENT_SHOWN),
+    roll: () => rollWith(true),
+    rollQuiet: () => rollWith(false),
+    show,
+    rollToken,
+  };
 }

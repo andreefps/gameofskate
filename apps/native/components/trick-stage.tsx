@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { AccessibilityInfo, Platform, StyleSheet, Text, View, type LayoutChangeEvent } from "react-native";
 
 import { RevealFade, TrickName } from "@/components/trick-name";
@@ -26,12 +26,16 @@ type Props = {
   hapticsEnabled: boolean;
   onRoll: () => void;
   onOpenSettings: () => void;
+  /** Game mode: tapping does nothing and the difficulty label is replaced by this turn line. */
+  interactive?: boolean;
+  turnLine?: ReactNode;
 };
 
-function DifficultyMeta({ rank, label }: { rank: number; label: string }) {
+function DifficultyMeta({ rank, label, lead }: { rank: number; label: string; lead?: ReactNode }) {
   const { colors } = useTheme();
   return (
     <View style={styles.meta}>
+      {lead}
       {rank > 0 ? (
         <View style={styles.dots}>
           {[1, 2, 3].map((n) => (
@@ -42,12 +46,22 @@ function DifficultyMeta({ rank, label }: { rank: number; label: string }) {
           ))}
         </View>
       ) : null}
-      <Text style={[styles.metaLabel, { color: colors.inkMuted }]}>{label}</Text>
+      {lead ? null : <Text style={[styles.metaLabel, { color: colors.inkMuted }]}>{label}</Text>}
     </View>
   );
 }
 
-export function TrickStage({ trick, poolSize, rollToken, maxSize, hapticsEnabled, onRoll, onOpenSettings }: Props) {
+export function TrickStage({
+  trick,
+  poolSize,
+  rollToken,
+  maxSize,
+  hapticsEnabled,
+  onRoll,
+  onOpenSettings,
+  interactive = true,
+  turnLine,
+}: Props) {
   const { colors } = useTheme();
   const [size, setSize] = useState({ width: 0, height: 0 });
 
@@ -82,15 +96,17 @@ export function TrickStage({ trick, poolSize, rollToken, maxSize, hapticsEnabled
     <PressableScale
       noScale
       onPress={onRoll}
-      accessibilityRole="button"
-      accessibilityLabel="Call a trick"
+      disabled={!interactive}
+      accessible={interactive ? undefined : false}
+      accessibilityRole={interactive ? "button" : undefined}
+      accessibilityLabel={interactive ? "Call a trick" : undefined}
       style={styles.stage}
     >
       <View style={styles.inner} onLayout={onLayout}>
         {ready ? (
           <View key={trick ? `t${rollToken}` : "empty"}>
             <RevealFade wordCount={words.length} animate={!!trick}>
-              <DifficultyMeta rank={rank} label={metaLabel} />
+              <DifficultyMeta rank={rank} label={metaLabel} lead={turnLine} />
             </RevealFade>
             <TrickName
               words={words}

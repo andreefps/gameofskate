@@ -20,3 +20,7 @@ export function notifySuccess(): void {
 export function selectionTick(): void {
   if (!isWeb) void Haptics.selectionAsync();
 }
+
+export function notifyWarning(): void {
+  if (!isWeb) void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+}

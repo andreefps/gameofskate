@@ -10,6 +10,7 @@ import { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
+import { GameProvider } from "@/stores/game";
 import { SettingsProvider } from "@/stores/settings";
 import { ThemeProvider } from "@/theme/theme-provider";
 
@@ -38,11 +39,13 @@ export default function Layout() {
       <SafeAreaProvider>
         <ThemeProvider>
           <SettingsProvider>
-            <BottomSheetModalProvider>
-              <Stack screenOptions={{ headerShown: false }}>
-                <Stack.Screen name="index" />
-              </Stack>
-            </BottomSheetModalProvider>
+            <GameProvider>
+              <BottomSheetModalProvider>
+                <Stack screenOptions={{ headerShown: false }}>
+                  <Stack.Screen name="index" />
+                </Stack>
+              </BottomSheetModalProvider>
+            </GameProvider>
           </SettingsProvider>
         </ThemeProvider>
       </SafeAreaProvider>

@@ -5,14 +5,16 @@ type Handler = (event: KeyboardEvent) => void;
 
 /**
  * Web-only global key bindings, keyed by `KeyboardEvent.key` (" " for Space).
- * Ignored while focus is in an editable field or when `enabled` is false.
+ * Ctrl/Cmd combos use the "mod+<lowercase key>" form. Ignored while focus is in an editable field or when `enabled` is false.
  * No-op on native.
  */
 export function useHotkeys(bindings: Record<string, Handler>, enabled = true): void {
   useEffect(() => {
     if (Platform.OS !== "web" || !enabled || typeof window === "undefined") return;
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.metaKey || event.ctrlKey || event.altKey || event.repeat) return;
+      if (event.altKey || event.repeat) return;
+      // Ctrl/Cmd combos are looked up as "mod+<key>" (e.g. "mod+z").
+      const mod = event.metaKey || event.ctrlKey;
       const target = event.target as HTMLElement | null;
       const tag = target?.tagName;
       if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || target?.isContentEditable) return;
@@ -20,7 +22,7 @@ export function useHotkeys(bindings: Record<string, Handler>, enabled = true): v
       if (target?.getAttribute?.("role") === "button" && (event.key === " " || event.key === "Enter")) {
         if (target !== document.body) return;
       }
-      const handler = bindings[event.key];
+      const handler = bindings[mod ? `mod+${event.key.toLowerCase()}` : event.key];
       if (handler) {
         event.preventDefault();
         handler(event);

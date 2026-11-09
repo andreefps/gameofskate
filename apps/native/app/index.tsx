@@ -3,14 +3,22 @@ import { useRef, useState } from "react";
 import { StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { GameControls } from "@/components/game/game-controls";
+import { GameOver } from "@/components/game/game-over";
+import { GameSetupSheet } from "@/components/game/game-setup-sheet";
+import { PlayersStrip } from "@/components/game/players-strip";
+import { TurnLine } from "@/components/game/turn-line";
 import { Header } from "@/components/header";
 import { SettingsSheet } from "@/components/settings-sheet";
 import { TrickStage } from "@/components/trick-stage";
 import { Button } from "@/components/ui/button";
 import { Segmented } from "@/components/ui/segmented";
+import { useGameTrick } from "@/hooks/use-game-trick";
 import { useHotkeys } from "@/hooks/use-hotkeys";
 import { useTrickCaller } from "@/hooks/use-trick-caller";
+import { confirmEndGame } from "@/lib/confirm";
 import type { DomainId } from "@/lib/skate/types";
+import { useGame } from "@/stores/game";
 import { useSettings } from "@/stores/settings";
 import { useTheme } from "@/theme/theme-provider";
 import { fonts } from "@/theme/tokens";
@@ -27,17 +35,31 @@ export default function CallerScreen() {
   const { settings, dispatch } = useSettings();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
-  const { pool, current, recent, roll, rollToken } = useTrickCaller();
+  const caller = useTrickCaller();
+  const { pool, current, recent, roll, rollToken } = caller;
+  const gameStore = useGame();
+  const { game } = gameStore;
+  useGameTrick(caller);
   const sheetRef = useRef<BottomSheetModal>(null);
-  const [sheetOpen, setSheetOpen] = useState(false);
+  const setupRef = useRef<BottomSheetModal>(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [setupOpen, setSetupOpen] = useState(false);
+  const sheetOpen = settingsOpen || setupOpen;
 
   const wide = width >= WIDE_BREAKPOINT;
   const gutter = wide ? 24 : 20;
   const empty = pool.length === 0;
 
-  useHotkeys({ " ": roll, Enter: roll }, !sheetOpen && !empty);
+  useHotkeys({ " ": roll, Enter: roll }, !game && !sheetOpen && !empty);
 
   const openSettings = () => sheetRef.current?.present();
+  const openSetup = () => setupRef.current?.present();
+  const startGame = (names: string[]) => {
+    setupRef.current?.dismiss();
+    gameStore.start(names);
+  };
+  const state = game?.present;
+  const over = state?.phase === "over";
   const trail = recent
     .slice(0, 4)
     .map((t) => t.name)
@@ -56,8 +78,16 @@ export default function CallerScreen() {
           },
         ]}
       >
-        {/* headerRight: game agent adds the "Play S.K.A.T.E." button here. */}
-        <Header onOpenSettings={openSettings} headerRight={null} />
+        <Header
+          onOpenSettings={openSettings}
+          headerRight={
+            game ? (
+              <Button size="sm" variant="ghost" icon="close" label="End" onPress={() => confirmEndGame(gameStore.end)} />
+            ) : (
+              <Button size="sm" variant="secondary" icon="people-outline" label="Play S.K.A.T.E." onPress={openSetup} />
+            )
+          }
+        />
 
         <View style={styles.spot}>
           <Segmented
@@ -68,35 +98,75 @@ export default function CallerScreen() {
           />
         </View>
 
-        <TrickStage
-          trick={current}
-          poolSize={pool.length}
-          rollToken={rollToken}
-          maxSize={wide ? 150 : 104}
-          hapticsEnabled={settings.hapticsEnabled}
-          onRoll={roll}
-          onOpenSettings={openSettings}
-        />
+        {state && !over ? <PlayersStrip state={state} /> : null}
 
-        <View style={styles.trailSlot}>
-          {trail ? (
-            <Text numberOfLines={1} style={[styles.trail, { color: colors.inkMuted }]}>
-              Last: {trail}
-            </Text>
-          ) : null}
-        </View>
+        {state && over ? (
+          <GameOver
+            state={state}
+            canUndo={game!.past.length > 0}
+            maxSize={wide ? 150 : 104}
+            hapticsEnabled={settings.hapticsEnabled}
+            hotkeysEnabled={!sheetOpen}
+            onRematch={gameStore.rematch}
+            onNewGame={openSetup}
+            onDone={gameStore.end}
+            onUndo={gameStore.undo}
+          />
+        ) : (
+          <>
+            <TrickStage
+              trick={current}
+              poolSize={pool.length}
+              rollToken={rollToken}
+              maxSize={wide ? 150 : 104}
+              hapticsEnabled={settings.hapticsEnabled}
+              onRoll={roll}
+              onOpenSettings={openSettings}
+              interactive={!state}
+              turnLine={state ? <TurnLine state={state} /> : undefined}
+            />
 
-        <Button
-          size="lg"
-          variant="primary"
-          icon="shuffle"
-          label={current ? "Next trick" : "Call trick"}
-          disabled={empty}
-          onPress={roll}
-        />
+            {state ? (
+              <GameControls
+                phase={state.phase}
+                canUndo={game!.past.length > 0}
+                hapticsEnabled={settings.hapticsEnabled}
+                hotkeysEnabled={!sheetOpen && !empty}
+                onResult={gameStore.result}
+                onUndo={gameStore.undo}
+                onNewTrick={roll}
+              />
+            ) : (
+              <>
+                <View style={styles.trailSlot}>
+                  {trail ? (
+                    <Text numberOfLines={1} style={[styles.trail, { color: colors.inkMuted }]}>
+                      Last: {trail}
+                    </Text>
+                  ) : null}
+                </View>
+
+                <Button
+                  size="lg"
+                  variant="primary"
+                  icon="shuffle"
+                  label={current ? "Next trick" : "Call trick"}
+                  disabled={empty}
+                  onPress={roll}
+                />
+              </>
+            )}
+          </>
+        )}
       </View>
 
-      <SettingsSheet ref={sheetRef} onOpenChange={setSheetOpen} />
+      <SettingsSheet ref={sheetRef} onOpenChange={setSettingsOpen} />
+      <GameSetupSheet
+        ref={setupRef}
+        initialNames={gameStore.lastNames}
+        onStart={startGame}
+        onOpenChange={setSetupOpen}
+      />
     </View>
   );
 }
