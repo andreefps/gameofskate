@@ -9,7 +9,8 @@
       "name": "Skate Call",
       "shortName": "Skate Call",
       "description": "Call the next trick for your Game of SKATE session.",
-      "themeColor": "#6EC9D5",
+      "themeColor": "#F1EEE7",
+      "backgroundColor": "#F1EEE7",
       "favicon": "./assets/images/favicon.png"
     },
     "name": "Skate Call",
