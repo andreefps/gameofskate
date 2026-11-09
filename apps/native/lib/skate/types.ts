@@ -21,6 +21,12 @@ export type BaseTrick = {
   /** Base difficulty before stance/direction modifiers (1-10). */
   base: number;
   dir: DirMode;
+  /**
+   * Full-name overrides per stance. When present, the string replaces the
+   * stance prefix + base name (direction word still applies), e.g. nollie
+   * Ollie is simply "Nollie".
+   */
+  stanceNames?: Partial<Record<Stance, string>>;
 };
 
 export type DomainId = "flatground" | "grinds";
@@ -44,6 +50,8 @@ export type Trick = {
   /** BaseTrick id. */
   base: string;
   dir?: Dir;
+  /** Well-known alternative name (e.g. "Half Cab"). */
+  alias?: string;
 };
 
 export type Tier = "beginner" | "intermediate" | "advanced";

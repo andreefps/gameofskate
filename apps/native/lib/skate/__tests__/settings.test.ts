@@ -168,3 +168,17 @@ describe("hydrate", () => {
     expect(h.domains.flatground).not.toHaveProperty("tiers");
   });
 });
+
+describe("default preset and new tricks", () => {
+  it("enables the new flatground tricks by default", () => {
+    const bases = makeDefaultSettings().domains.flatground.enabledBases;
+    for (const id of ["180-kickflip", "180-heelflip", "360", "double-kickflip"]) {
+      expect(bases).toContain(id);
+    }
+  });
+
+  it("hydrate keeps the new base ids", () => {
+    const h = hydrate({ domains: { flatground: { enabledBases: ["360", "double-kickflip"] } } });
+    expect(h.domains.flatground.enabledBases).toEqual(["360", "double-kickflip"]);
+  });
+});

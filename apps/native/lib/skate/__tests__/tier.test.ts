@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { TIERS, tierOf } from "@/lib/skate/tier";
+import { TIERS, tierOf, tierRank } from "@/lib/skate/tier";
 
 describe("TIERS", () => {
   it("lists tiers easiest-first", () => {
@@ -22,5 +22,11 @@ describe("tierOf", () => {
   it("maps 9 and up to advanced", () => {
     expect(tierOf(9)).toBe("advanced");
     expect(tierOf(15)).toBe("advanced");
+  });
+});
+
+describe("tierRank", () => {
+  it("ranks tiers 1-3", () => {
+    expect(TIERS.map(tierRank)).toEqual([1, 2, 3]);
   });
 });

@@ -37,8 +37,8 @@ describe("DOMAINS registry", () => {
 describe("flatground enumeration", () => {
   const tricks = enumerate(DOMAINS.flatground);
 
-  it("enumerates 76 tricks (19 variants x 4 stances)", () => {
-    expect(tricks).toHaveLength(76);
+  it("enumerates 104 tricks (26 variants x 4 stances)", () => {
+    expect(tricks).toHaveLength(104);
   });
 
   it("names combinatorial tricks correctly", () => {
@@ -60,6 +60,45 @@ describe("flatground enumeration", () => {
     expect(names(tricks)).not.toContain("Bigspin");
     expect(names(tricks)).toContain("Frontside 180");
     expect(names(tricks)).toContain("Backside Bigspin");
+  });
+});
+
+describe("flatground naming + aliases", () => {
+  const tricks = enumerate(DOMAINS.flatground);
+  const byName = (n: string) => tricks.find((t) => t.name === n);
+
+  it("names nollie ollie just Nollie, keeps Fakie/Switch Ollie", () => {
+    expect(byName("Nollie")?.id).toBe("flatground:nollie:ollie:x");
+    expect(byName("Nollie Ollie")).toBeUndefined();
+    expect(byName("Fakie Ollie")).toBeDefined();
+    expect(byName("Switch Ollie")).toBeDefined();
+  });
+
+  it("generates the new classic tricks", () => {
+    for (const n of [
+      "Frontside Flip", "Backside Flip", "Switch Frontside Flip",
+      "Frontside Heelflip", "Backside Heelflip", "Frontside 360", "Backside 360",
+      "Double Kickflip", "Shuvit".replace("Shuvit", "Frontside Shuvit"),
+    ]) expect(byName(n), n).toBeDefined();
+    expect(byName("Flip")).toBeUndefined();
+    expect(byName("360")).toBeUndefined();
+  });
+
+  it("keeps bases sorted by base difficulty", () => {
+    const b = DOMAINS.flatground.bases.map((x) => x.base);
+    expect(b).toEqual([...b].sort((x, y) => x - y));
+  });
+
+  it("assigns aliases from the rule table", () => {
+    expect(byName("Fakie Backside 180")?.alias).toBe("Half Cab");
+    expect(byName("Fakie Backside 360")?.alias).toBe("Full Cab");
+    expect(byName("Fakie Backside Flip")?.alias).toBe("Half Cab Flip");
+    expect(byName("360 Flip")?.alias).toBe("Tre Flip");
+    expect(byName("Nollie 360 Flip")?.alias).toBe("Nollie Tre Flip");
+    expect(byName("Switch 360 Flip")?.alias).toBe("Switch Tre Flip");
+    expect(byName("Fakie 360 Flip")?.alias).toBe("Fakie Tre Flip");
+    expect(byName("Backside 180")?.alias).toBeUndefined();
+    expect(tricks.filter((t) => t.alias)).toHaveLength(7);
   });
 });
 

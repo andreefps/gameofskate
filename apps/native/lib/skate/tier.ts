@@ -9,3 +9,8 @@ export function tierOf(difficulty: number): Tier {
   if (difficulty <= 8) return "intermediate";
   return "advanced";
 }
+
+/** 1-based rank of a tier, for a 3-dot difficulty meter. */
+export function tierRank(tier: Tier): 1 | 2 | 3 {
+  return (TIERS.indexOf(tier) + 1) as 1 | 2 | 3;
+}

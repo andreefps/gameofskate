@@ -1,4 +1,3 @@
-import "@/global.css";
 import { BarlowCondensed_800ExtraBold } from "@expo-google-fonts/barlow-condensed/800ExtraBold";
 import { DMSans_400Regular } from "@expo-google-fonts/dm-sans/400Regular";
 import { DMSans_600SemiBold } from "@expo-google-fonts/dm-sans/600SemiBold";
@@ -7,14 +6,12 @@ import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { HeroUINativeProvider } from "heroui-native";
 import { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
-import { AppThemeProvider } from "@/contexts/app-theme-context";
 import { SettingsProvider } from "@/stores/settings";
+import { ThemeProvider } from "@/theme/theme-provider";
 
 export const unstable_settings = {
   initialRouteName: "index",
@@ -39,19 +36,15 @@ export default function Layout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <KeyboardProvider>
-          <AppThemeProvider>
-            <HeroUINativeProvider>
-              <SettingsProvider>
-                <BottomSheetModalProvider>
-                  <Stack screenOptions={{ headerShown: false }}>
-                    <Stack.Screen name="index" />
-                  </Stack>
-                </BottomSheetModalProvider>
-              </SettingsProvider>
-            </HeroUINativeProvider>
-          </AppThemeProvider>
-        </KeyboardProvider>
+        <ThemeProvider>
+          <SettingsProvider>
+            <BottomSheetModalProvider>
+              <Stack screenOptions={{ headerShown: false }}>
+                <Stack.Screen name="index" />
+              </Stack>
+            </BottomSheetModalProvider>
+          </SettingsProvider>
+        </ThemeProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

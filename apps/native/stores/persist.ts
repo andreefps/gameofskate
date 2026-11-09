@@ -4,13 +4,23 @@ import { Platform } from "react-native";
 const isWeb = Platform.OS === "web";
 
 function readSync(key: string): string | null {
-  if (isWeb) return globalThis.localStorage?.getItem(key) ?? null;
+  if (isWeb) {
+    try {
+      return globalThis.localStorage?.getItem(key) ?? null;
+    } catch {
+      return null;
+    }
+  }
   return SecureStore.getItem(key);
 }
 
 function writeAsync(key: string, value: string): void {
   if (isWeb) {
-    globalThis.localStorage?.setItem(key, value);
+    try {
+      globalThis.localStorage?.setItem(key, value);
+    } catch {
+      // private mode / quota: ignore
+    }
     return;
   }
   void SecureStore.setItemAsync(key, value).catch(() => {

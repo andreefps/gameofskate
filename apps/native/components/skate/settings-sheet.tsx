@@ -4,7 +4,6 @@ import {
   BottomSheetScrollView,
   type BottomSheetBackdropProps,
 } from "@gorhom/bottom-sheet";
-import { useThemeColor } from "heroui-native";
 import { forwardRef, type ReactNode } from "react";
 import { Platform, StyleSheet, Switch, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -16,16 +15,18 @@ import { TIER_LABEL } from "@/components/skate/tier-label";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { DOMAINS, DOMAIN_LIST } from "@/lib/skate/domains";
 import { TIERS } from "@/lib/skate/tier";
+import { useTheme } from "@/theme/theme-provider";
 import { useSettings } from "@/stores/settings";
 
 const SNAP_POINTS = ["90%"];
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
-  const foreground = useThemeColor("foreground");
+  const { colors } = useTheme();
+  const foreground = colors.ink;
   return (
     <View style={styles.section}>
       <View style={styles.sectionHeading}>
-        <View style={styles.sectionMarker} />
+        <View style={[styles.sectionMarker, { backgroundColor: colors.accent }]} />
         <Text style={[styles.sectionTitle, { color: foreground }]}>{title}</Text>
       </View>
       <View style={styles.chipRow}>{children}</View>
@@ -37,13 +38,12 @@ export const SettingsSheet = forwardRef<BottomSheetModal>(function SettingsSheet
   const { settings, dispatch } = useSettings();
   const insets = useSafeAreaInsets();
 
-  const [background, foreground, muted, surface, accent] = useThemeColor([
-    "surface",
-    "foreground",
-    "muted",
-    "surface-secondary",
-    "accent",
-  ]);
+  const { colors } = useTheme();
+  const background = colors.surface;
+  const foreground = colors.ink;
+  const muted = colors.inkMuted;
+  const surface = colors.surfaceAlt;
+  const accent = colors.accent;
 
   const domainId = settings.activeDomain;
   const domain = DOMAINS[domainId];
@@ -73,7 +73,7 @@ export const SettingsSheet = forwardRef<BottomSheetModal>(function SettingsSheet
         ])}
       >
         <View style={styles.titleBlock}>
-          <Text style={styles.headingKicker}>BUILD YOUR LINE</Text>
+          <Text style={[styles.headingKicker, { backgroundColor: colors.accent, color: colors.accentInk }]}>BUILD YOUR LINE</Text>
           <Text style={[styles.heading, { color: foreground }]}>Tune the session</Text>
           <Text style={[styles.headingBody, { color: muted }]}>Pick the spot, difficulty, and trick bag.</Text>
         </View>
@@ -91,7 +91,7 @@ export const SettingsSheet = forwardRef<BottomSheetModal>(function SettingsSheet
 
         <View style={styles.section}>
           <View style={styles.sectionHeading}>
-            <View style={styles.sectionMarker} />
+            <View style={[styles.sectionMarker, { backgroundColor: colors.accent }]} />
             <Text style={[styles.sectionTitle, { color: foreground }]}>Difficulty</Text>
           </View>
           <DifficultyBar
@@ -140,7 +140,7 @@ export const SettingsSheet = forwardRef<BottomSheetModal>(function SettingsSheet
             value={settings.hapticsEnabled}
             onValueChange={() => dispatch({ type: "toggleHaptics" })}
             trackColor={{ true: accent, false: surface }}
-            thumbColor="#FFF7DF"
+            thumbColor={colors.accentInk}
             style={styles.nonInteractive}
             accessible={false}
           />
@@ -153,10 +153,10 @@ export const SettingsSheet = forwardRef<BottomSheetModal>(function SettingsSheet
 
         <ScalePressable
           onPress={() => dispatch({ type: "reset" })}
-          style={styles.reset}
+          style={[styles.reset, { backgroundColor: colors.ink }]}
           accessibilityRole="button"
         >
-          <Text style={styles.resetLabel}>Reset the setup</Text>
+          <Text style={[styles.resetLabel, { color: colors.bg }]}>Reset the setup</Text>
         </ScalePressable>
       </BottomSheetScrollView>
     </BottomSheetModal>
@@ -185,8 +185,6 @@ const styles = StyleSheet.create({
     marginBottom: 7,
     paddingHorizontal: 10,
     paddingVertical: 5,
-    backgroundColor: "#F6C84C",
-    color: "#17212B",
     fontFamily: "DMSans_700Bold",
     fontSize: 9,
     letterSpacing: 1.7,
@@ -215,7 +213,6 @@ const styles = StyleSheet.create({
   sectionMarker: {
     width: 15,
     height: 5,
-    backgroundColor: "#F15B45",
     transform: [{ rotate: "-9deg" }],
   },
   sectionTitle: {
@@ -248,10 +245,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#17212B",
   },
   resetLabel: {
-    color: "#FFF7DF",
     fontFamily: "DMSans_700Bold",
     fontSize: 14,
   },

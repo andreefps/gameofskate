@@ -2,9 +2,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { StyleSheet, Text } from "react-native";
 
 import { ScalePressable } from "@/components/scale-pressable";
-import { useAppTheme } from "@/contexts/app-theme-context";
 import { selectionTick } from "@/lib/haptics";
 import type { Domain } from "@/lib/skate/types";
+import { useTheme } from "@/theme/theme-provider";
 
 type Props = {
   domain: Domain;
@@ -14,15 +14,15 @@ type Props = {
 
 /** Tappable pill showing the active domain; tap switches between domains. */
 export function DomainPill({ domain, onToggle, hapticsEnabled }: Props) {
-  const { isLight } = useAppTheme();
+  const { colors } = useTheme();
 
   return (
     <ScalePressable
       style={[
         styles.pill,
         {
-          backgroundColor: "#F6C84C",
-          boxShadow: isLight ? "3px 4px 0 #17212B" : "3px 4px 0 rgba(255, 247, 223, 0.22)",
+          backgroundColor: colors.accent,
+          boxShadow: `3px 4px 0 ${colors.ink}`,
         },
       ]}
       hitSlop={8}
@@ -34,9 +34,9 @@ export function DomainPill({ domain, onToggle, hapticsEnabled }: Props) {
         onToggle();
       }}
     >
-      <Text style={styles.prefix}>SPOT:</Text>
-      <Text style={styles.label}>{domain.label}</Text>
-      <Ionicons name="swap-horizontal" size={17} color="#17212B" />
+      <Text style={[styles.prefix, { color: colors.accentInk }]}>SPOT:</Text>
+      <Text style={[styles.label, { color: colors.accentInk }]}>{domain.label}</Text>
+      <Ionicons name="swap-horizontal" size={17} color={colors.accentInk} />
     </ScalePressable>
   );
 }
@@ -54,13 +54,11 @@ const styles = StyleSheet.create({
     transform: [{ rotate: "-1.5deg" }],
   },
   prefix: {
-    color: "#17212B",
     fontFamily: "DMSans_700Bold",
     fontSize: 8,
     letterSpacing: 1.2,
   },
   label: {
-    color: "#17212B",
     fontFamily: "BarlowCondensed_800ExtraBold",
     fontSize: 17,
     letterSpacing: 0.5,

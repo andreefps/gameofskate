@@ -9,13 +9,11 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
-import { withUniwind } from "uniwind";
 
 import { ScalePressable } from "@/components/scale-pressable";
-import { useAppTheme } from "@/contexts/app-theme-context";
 import { impactLight } from "@/lib/haptics";
+import { useTheme } from "@/theme/theme-provider";
 
-const StyledIonicons = withUniwind(Ionicons);
 const ICON_TRANSITION_MS = 300;
 
 type Props = {
@@ -23,7 +21,8 @@ type Props = {
 };
 
 export function ThemeToggle({ hapticsEnabled }: Props) {
-  const { toggleTheme, isLight } = useAppTheme();
+  const { colors, scheme, setPreference } = useTheme();
+  const isLight = scheme === "light";
   const reduceMotion = useReducedMotion();
   const progress = useSharedValue(isLight ? 0 : 1);
   const didMount = useRef(false);
@@ -60,7 +59,7 @@ export function ThemeToggle({ hapticsEnabled }: Props) {
     <ScalePressable
       onPress={() => {
         if (hapticsEnabled && !reduceMotion) impactLight();
-        toggleTheme();
+        setPreference(isLight ? "dark" : "light");
       }}
       style={styles.button}
       accessibilityRole="button"
@@ -68,10 +67,10 @@ export function ThemeToggle({ hapticsEnabled }: Props) {
     >
       <View style={styles.iconStack}>
         <Animated.View style={[styles.icon, moonStyle]}>
-          <StyledIonicons name="moon" size={20} className="text-foreground" />
+          <Ionicons name="moon" size={20} color={colors.ink} />
         </Animated.View>
         <Animated.View style={[styles.icon, sunStyle]}>
-          <StyledIonicons name="sunny" size={20} className="text-foreground" />
+          <Ionicons name="sunny" size={20} color={colors.ink} />
         </Animated.View>
       </View>
     </ScalePressable>

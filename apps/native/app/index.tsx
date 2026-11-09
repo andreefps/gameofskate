@@ -1,6 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
 import type { BottomSheetModal } from "@gorhom/bottom-sheet";
-import { useThemeColor } from "heroui-native";
 import { useEffect, useRef, useState } from "react";
 import { StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { useReducedMotion } from "react-native-reanimated";
@@ -12,19 +11,20 @@ import { DomainPill } from "@/components/skate/domain-pill";
 import { GenerateSurface } from "@/components/skate/generate-surface";
 import { SettingsSheet } from "@/components/skate/settings-sheet";
 import { SLOT_REVEAL_DURATION_MS, TrickReveal } from "@/components/skate/trick-reveal";
-import { useAppTheme } from "@/contexts/app-theme-context";
 import { DOMAINS } from "@/lib/skate/domains";
 import { buildPool, pick } from "@/lib/skate/select";
 import { useSettings } from "@/stores/settings";
 import type { Trick } from "@/lib/skate/types";
+import { useTheme } from "@/theme/theme-provider";
 
 export default function GeneratorScreen() {
   const { settings, dispatch } = useSettings();
   const insets = useSafeAreaInsets();
   const { height: windowHeight } = useWindowDimensions();
   const reduceMotion = useReducedMotion();
-  const [foreground, muted] = useThemeColor(["foreground", "muted"]);
-  const { isLight } = useAppTheme();
+  const { colors } = useTheme();
+  const foreground = colors.ink;
+  const muted = colors.inkMuted;
 
   const domainId = settings.activeDomain;
   const domain = DOMAINS[domainId];
@@ -51,7 +51,7 @@ export default function GeneratorScreen() {
       if (prev === null) return null; // no roll yet — keep the prompt
       if (pool.length === 0) return null; // filters now exclude everything
       if (pool.some((t) => t.id === prev.id)) return prev; // still valid
-      return pick(pool, lastIdRef.current); // silently swap to a valid trick
+      return pick(pool, lastIdRef.current ? [lastIdRef.current] : []); // silently swap to a valid trick
     });
     // pool is derived from domainId + ds; re-check only when those change.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -59,7 +59,7 @@ export default function GeneratorScreen() {
 
   const roll = () => {
     if (isRolling) return;
-    const next = pick(pool, lastIdRef.current);
+    const next = pick(pool, lastIdRef.current ? [lastIdRef.current] : []);
     if (!next) return;
 
     if (rollTimerRef.current) clearTimeout(rollTimerRef.current);
@@ -84,11 +84,11 @@ export default function GeneratorScreen() {
     dispatch({ type: "setActiveDomain", domain: domainId === "flatground" ? "grinds" : "flatground" });
 
   return (
-    <Container isScrollable={false} className="bg-background">
+    <Container isScrollable={false}>
       <View style={styles.skyDecorations}>
-        <View style={[styles.sun, { backgroundColor: isLight ? "#F6C84C" : "#F15B45" }]} />
-        <View style={[styles.railLine, { borderColor: isLight ? "#17212B" : "#FFF7DF" }]} />
-        <Text style={[styles.skyScribble, { color: isLight ? "#17212B" : "#FFF7DF" }]}>////</Text>
+        <View style={[styles.sun, { backgroundColor: colors.accent }]} />
+        <View style={[styles.railLine, { borderColor: colors.ink }]} />
+        <Text style={[styles.skyScribble, { color: colors.ink }]}>////</Text>
       </View>
 
       <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
@@ -101,10 +101,8 @@ export default function GeneratorScreen() {
           style={[
             styles.menuButton,
             {
-              backgroundColor: isLight ? "#FFF7DF" : "#22343D",
-              boxShadow: isLight
-                ? "3px 4px 0 #17212B"
-                : "3px 4px 0 rgba(255, 247, 223, 0.25)",
+              backgroundColor: colors.surface,
+              boxShadow: `3px 4px 0 ${colors.ink}`,
             },
           ]}
           accessibilityRole="button"
@@ -126,9 +124,7 @@ export default function GeneratorScreen() {
               style={[
                 styles.emptyButton,
                 {
-                  boxShadow: isLight
-                    ? "0 0 0 1px rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.04)"
-                    : "0 0 0 1px rgba(255, 255, 255, 0.08)",
+                  boxShadow: `0 0 0 1px ${colors.line}`,
                 },
               ]}
               hitSlop={8}

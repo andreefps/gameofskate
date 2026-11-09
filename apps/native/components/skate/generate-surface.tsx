@@ -1,11 +1,10 @@
-import { useThemeColor } from "heroui-native";
 import type { ReactNode } from "react";
 import { Platform, StyleSheet, Text, View } from "react-native";
 import { useReducedMotion } from "react-native-reanimated";
 
 import { ScalePressable } from "@/components/scale-pressable";
-import { useAppTheme } from "@/contexts/app-theme-context";
 import { impactLight, impactMedium } from "@/lib/haptics";
+import { useTheme } from "@/theme/theme-provider";
 
 type Props = {
   onRoll: () => void;
@@ -24,8 +23,7 @@ export function GenerateSurface({
   children,
 }: Props) {
   const reduceMotion = useReducedMotion();
-  const [foreground, surface] = useThemeColor(["foreground", "surface"]);
-  const { isLight } = useAppTheme();
+  const { colors } = useTheme();
   const label = isRolling ? "ROLLING…" : hasRolled ? "ROLL AGAIN" : "CALL A TRICK";
 
   return (
@@ -34,10 +32,8 @@ export function GenerateSurface({
         styles.deckShadow,
         Platform.OS === "web" && styles.web,
         {
-          backgroundColor: isLight ? "#17212B" : "#081117",
-          boxShadow: isLight
-            ? "0 22px 40px rgba(23, 33, 43, 0.25), 7px 9px 0 rgba(23, 33, 43, 0.9)"
-            : "0 22px 48px rgba(0, 0, 0, 0.42), 7px 9px 0 rgba(255, 247, 223, 0.12)",
+          backgroundColor: colors.ink,
+          boxShadow: `7px 9px 0 ${colors.line}`,
         },
       ]}
     >
@@ -47,8 +43,8 @@ export function GenerateSurface({
       </View>
 
       <View style={styles.surface}>
-        <View style={[styles.tape, { backgroundColor: isLight ? "#F6C84C" : "#D9A72D" }]}>
-          <Text style={styles.tapeText}>TODAY'S SET</Text>
+        <View style={[styles.tape, { backgroundColor: colors.accent }]}>
+          <Text style={[styles.tapeText, { color: colors.accentInk }]}>TODAY'S SET</Text>
         </View>
         {children}
 
@@ -64,8 +60,8 @@ export function GenerateSurface({
           style={[
             styles.button,
             {
-              backgroundColor: "#F15B45",
-              boxShadow: isLight ? "4px 5px 0 #FFF7DF" : "4px 5px 0 #22343D",
+              backgroundColor: colors.accent,
+              boxShadow: `4px 5px 0 ${colors.surface}`,
             },
             isRolling && styles.buttonDisabled,
           ]}
@@ -73,9 +69,9 @@ export function GenerateSurface({
           accessibilityLabel={label}
           accessibilityState={{ disabled: isRolling, busy: isRolling }}
         >
-          <Text style={[styles.buttonLabel, { color: "#FFF7DF" }]}>{label}</Text>
-          <View style={[styles.buttonArrow, { backgroundColor: surface }]}>
-            <Text style={[styles.buttonArrowText, { color: foreground }]}>↗</Text>
+          <Text style={[styles.buttonLabel, { color: colors.accentInk }]}>{label}</Text>
+          <View style={[styles.buttonArrow, { backgroundColor: colors.surface }]}>
+            <Text style={[styles.buttonArrowText, { color: colors.ink }]}>↗</Text>
           </View>
         </ScalePressable>
       </View>
@@ -137,7 +133,6 @@ const styles = StyleSheet.create({
     transform: [{ rotate: "-5deg" }],
   },
   tapeText: {
-    color: "#17212B",
     fontFamily: "DMSans_700Bold",
     fontSize: 9,
     letterSpacing: 1.4,

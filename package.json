@@ -14,11 +14,6 @@
     "dev:native": "turbo -F native dev",
     "dev:web": "pnpm -F native web"
   },
-  "dependencies": {
-    "@gameofskate/env": "workspace:*",
-    "dotenv": "catalog:",
-    "zod": "catalog:"
-  },
   "devDependencies": {
     "@gameofskate/config": "workspace:*",
     "turbo": "^2.9.16",

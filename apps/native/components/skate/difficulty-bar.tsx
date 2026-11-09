@@ -1,4 +1,3 @@
-import { useThemeColor } from "heroui-native";
 import { useEffect, useRef, useState } from "react";
 import { StyleSheet, Text, View, type LayoutChangeEvent } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
@@ -11,6 +10,7 @@ import Animated, {
 import { runOnJS } from "react-native-worklets";
 
 import { selectionTick } from "@/lib/haptics";
+import { useTheme } from "@/theme/theme-provider";
 
 const THUMB = 26;
 const TRACK_H = 6;
@@ -41,13 +41,12 @@ export function DifficultyBar({ labels, value, onChange, hapticsEnabled }: Props
   const lastIndex = useSharedValue(value);
   const draggingRef = useRef(false);
 
-  const [foreground, accent, surface, muted, background] = useThemeColor([
-    "foreground",
-    "accent",
-    "surface-secondary",
-    "muted",
-    "background",
-  ]);
+  const { colors } = useTheme();
+  const foreground = colors.ink;
+  const accent = colors.accent;
+  const surface = colors.surfaceAlt;
+  const muted = colors.inkMuted;
+  const background = colors.bg;
 
   const indexToX = (i: number) => (n > 1 ? (usable * i) / (n - 1) : 0);
 
