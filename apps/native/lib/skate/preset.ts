@@ -13,6 +13,11 @@ function baseTierIndex(baseDifficulty: number): number {
   return baseDifficulty <= 3 ? 0 : baseDifficulty <= 5 ? 1 : 2;
 }
 
+/** Difficulty tier a base trick belongs to, by its base difficulty. */
+export function baseTier(base: number): Tier {
+  return TIERS[baseTierIndex(base)]!;
+}
+
 export type Preset = { stances: Stance[]; bases: string[] };
 
 /**

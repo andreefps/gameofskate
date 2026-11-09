@@ -13,12 +13,14 @@ type Props<T extends string> = {
   value: T;
   onChange: (value: T) => void;
   size?: "md" | "sm";
+  /** Dim the control and ignore presses. */
+  disabled?: boolean;
   style?: ViewStyle;
 };
 
 const PAD = 3;
 
-export function Segmented<T extends string>({ options, value, onChange, size = "md", style }: Props<T>) {
+export function Segmented<T extends string>({ options, value, onChange, size = "md", disabled = false, style }: Props<T>) {
   const { colors } = useTheme();
   const reduceMotion = useReducedMotion();
   const [width, setWidth] = useState(0);
@@ -44,10 +46,11 @@ export function Segmented<T extends string>({ options, value, onChange, size = "
   return (
     <View
       accessibilityRole="radiogroup"
+      accessibilityState={{ disabled }}
       onLayout={(e: LayoutChangeEvent) => setWidth(e.nativeEvent.layout.width)}
       style={[
         styles.track,
-        { height: size === "sm" ? 36 : 40, backgroundColor: colors.surfaceAlt },
+        { height: size === "sm" ? 36 : 40, backgroundColor: colors.surfaceAlt, opacity: disabled ? 0.5 : 1 },
         style,
       ]}
     >
@@ -68,7 +71,8 @@ export function Segmented<T extends string>({ options, value, onChange, size = "
           key={o.value}
           noScale
           accessibilityRole="radio"
-          accessibilityState={{ selected: o.value === value }}
+          accessibilityState={{ selected: o.value === value, disabled }}
+          disabled={disabled}
           accessibilityLabel={o.label}
           onPress={() => onChange(o.value)}
           style={styles.item}

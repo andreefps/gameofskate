@@ -211,3 +211,15 @@ describe("hydrateGame", () => {
     expect(hydrateGame(bad)).toBeNull();
   });
 });
+
+describe("trimForPersist", () => {
+  it("keeps only the last N undo states", async () => {
+    const { trimForPersist } = await import("@/lib/skate/game");
+    let g = createGame(["A", "B"]);
+    for (let i = 0; i < 20; i++) g = gameReducer(g, { type: "result", landed: false });
+    const t = trimForPersist(g, 8);
+    expect(t.past).toHaveLength(8);
+    expect(t.past).toEqual(g.past.slice(-8));
+    expect(t.present).toBe(g.present);
+  });
+});

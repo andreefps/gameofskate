@@ -1,100 +1,84 @@
-# Game of SKATE
+# Skate Call
 
-A fast, minimal trick generator for the skateboarding **Game of SKATE** — tap to
-get a trick, go skate it. Covers all flatground stances and a full combinatorial
-trick space, plus a grinds & slides mode for the skatepark.
+A fast, minimal trick caller for skateboarding's **Game of S.K.A.T.E.** Tap to
+get a trick, go skate it — or hand the phone around and let the app keep score.
 
-> Built with React Native + Expo. Offline, no backend, no accounts.
+> React Native + Expo. iOS, Android and web. Offline, no backend, no accounts.
 
 ## Features
 
-- **Tap to roll** — one screen, one gesture. A quick slot-machine reveal with
-  spring settle and haptics. Tapping the trick rolls a new one.
-- **All the tricks, named correctly** — tricks are generated combinatorially
-  from stance × base trick × direction (e.g. _Nollie Backside 360 Shuvit_),
-  pruned by naming rules so you never get nonsense.
-- **Two modes** — **Flatground** and **Grinds & Slides** (ledges/rails), sharing
-  the same engine.
-- **Difficulty presets** — a draggable bar (Beginner · Intermediate · Advanced)
-  enables a curated set of stances and tricks per level. Fully customizable
-  afterward; reset restores defaults.
-- **Minimal menu** — a bottom sheet for mode, difficulty, stance/trick toggles,
-  haptics, and light/dark theme. Settings persist locally.
-- **Feels good** — UI-thread animations (Reanimated) and haptic feedback; honors
-  reduce-motion.
+- **Tap to call** — one big, readable trick name (sized to fit, one word per
+  line) with a quick staggered reveal and haptics. Tap the stage, the button, or
+  press <kbd>Space</kbd> on web.
+- **Correct names** — tricks are generated from stance × base trick × direction
+  (e.g. _Nollie Backside 360 Shuvit_), with well-known aliases (_Half Cab_,
+  _Tre Flip_) and naming rules (a nollie ollie is just a _Nollie_).
+- **Flat & Ledge** — flatground tricks or grinds & slides, one tap to switch.
+- **No repeats** — recent tricks are kept out of the next few calls; harder
+  tricks come up less often.
+- **Game of S.K.A.T.E.** — pass-and-play for 2–8 skaters: the setter sets, the
+  rest match, misses earn letters, last one standing wins. Undo, rematch, and a
+  solo mode (how many can you land before S.K.A.T.E.?). Games survive an app
+  reload. Web hotkeys: <kbd>L</kbd> landed, <kbd>M</kbd> missed, <kbd>U</kbd> undo.
+- **Trick bag** — a settings sheet with level presets (Beginner / Intermediate /
+  Advanced), stance and trick toggles, haptics, and System / Light / Dark theme.
+  Everything persists locally.
 
 ## Tech stack
 
 - [Expo](https://expo.dev) SDK 56, React Native 0.85, React 19 (React Compiler)
-- [expo-router](https://docs.expo.dev/router/introduction/) (file-based routing)
-- [uniwind](https://github.com/saadeghi/uniwind) (Tailwind CSS v4 for RN) +
-  [heroui-native](https://github.com/heroui-inc/heroui-native)
-- [react-native-reanimated](https://docs.swmansion.com/react-native-reanimated/)
-  4 + [gesture-handler](https://docs.swmansion.com/react-native-gesture-handler/)
-- [@gorhom/bottom-sheet](https://gorhom.dev/react-native-bottom-sheet/),
-  expo-haptics, expo-secure-store
-- [Turborepo](https://turbo.build) monorepo, [Vitest](https://vitest.dev) for the
-  engine
+- [expo-router](https://docs.expo.dev/router/introduction/), react-native-web
+- [Reanimated](https://docs.swmansion.com/react-native-reanimated/) 4,
+  gesture-handler, [@gorhom/bottom-sheet](https://gorhom.dev/react-native-bottom-sheet/)
+- Plain `StyleSheet` + a small token theme (`apps/native/theme/`)
+- [Turborepo](https://turbo.build) + pnpm, [Vitest](https://vitest.dev)
 
 ## Getting started
 
-Prerequisites: **Node 20+**, **pnpm 10+**, and the
-[Expo Go](https://expo.dev/go) app (or an iOS/Android simulator).
+Prerequisites: **Node 20+**, **pnpm 10+**, and [Expo Go](https://expo.dev/go)
+(or an iOS/Android simulator).
 
 ```bash
-pnpm install        # install dependencies
-pnpm dev:native     # start the Expo dev server
+pnpm install
+pnpm dev:native     # Expo dev server (press i / a / w)
+pnpm dev:web        # web only
 ```
-
-Then scan the QR code with Expo Go, or press `i` / `a` for a simulator.
 
 ## Scripts
 
 | Command | What it does |
 | --- | --- |
 | `pnpm dev:native` | Start the Expo dev server |
-| `pnpm test` | Run the engine unit tests (Vitest) |
+| `pnpm dev:web` | Start the web dev server |
+| `pnpm test` | Run the unit tests (Vitest) |
 | `pnpm check-types` | Type-check the workspace |
-| `pnpm -F native ios` / `android` | Build & run a native dev build |
 
 ## How it works
 
-The trick logic is a **pure, dependency-free engine** in
-`apps/native/lib/skate/`, unit-tested in isolation:
+The logic is pure TypeScript in `apps/native/lib/`, unit-tested in isolation:
 
-- `domains/` — the stances and base tricks for each mode (data).
-- `enumerate.ts` — expands components into the full set of valid, named,
-  difficulty-scored tricks (difficulty = base + stance modifier).
-- `select.ts` — weighted random pick (harder tricks are rarer) with no immediate
-  repeats.
-- `preset.ts` — maps a difficulty level to its curated stances + tricks.
-- `settings.ts` — pure reducer + persistence hydration.
+- `skate/domains/` — stances and base tricks per spot (data).
+- `skate/enumerate.ts` — expands components into every valid, named,
+  difficulty-scored trick, including aliases.
+- `skate/select.ts` — weighted pick that avoids recent tricks.
+- `skate/preset.ts`, `skate/settings.ts` — level presets and the settings reducer.
+- `skate/game.ts` — the Game of S.K.A.T.E. state machine (sets, matches,
+  letters, elimination, solo, undo, rematch).
+- `ui/fit-hero.ts` — sizes the trick name to the screen.
 
-The UI (`app/`, `components/skate/`, `stores/`) is a thin layer over that engine.
-
-## Project structure
+The UI is a thin layer on top:
 
 ```
 apps/native/
-  app/                 # expo-router screens (single generator screen)
-  components/skate/     # generator UI: reveal, tap surface, menu, difficulty bar
-  stores/               # settings context + persistence (expo-secure-store)
-  lib/skate/            # pure trick-generation engine (+ __tests__)
-docs/                   # design spec
+  app/              # single screen (expo-router)
+  components/       # trick stage, header, settings sheet
+  components/game/  # players strip, controls, game over, setup sheet
+  components/ui/    # button, segmented, chip, switch… primitives
+  hooks/            # trick caller, per-turn game trick, web hotkeys
+  stores/           # settings + game context, persistence
+  theme/            # color tokens (light/dark), fonts, radius, spacing
+  lib/              # pure engine (+ __tests__)
 ```
-
-## Roadmap
-
-Deliberately out of scope for now, but the architecture leaves room:
-
-- S-K-A-T-E letter tracking / pass-and-play scoring
-- Trick name aliases (Half Cab, Caballerial), frontside/backside difficulty split
-- Entry flips into grinds (e.g. kickflip to boardslide)
-
-## Acknowledgements
-
-Bootstrapped with
-[Better-T-Stack](https://github.com/AmanVarshney01/create-better-t-stack).
 
 ## License
 

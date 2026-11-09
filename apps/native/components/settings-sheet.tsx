@@ -15,7 +15,7 @@ import { Segmented } from "@/components/ui/segmented";
 import { SwitchRow } from "@/components/ui/switch-row";
 import { impactLight } from "@/lib/haptics";
 import { DOMAINS } from "@/lib/skate/domains";
-import { presetFor } from "@/lib/skate/preset";
+import { baseTier, presetFor } from "@/lib/skate/preset";
 import { buildPool } from "@/lib/skate/select";
 import { TIERS } from "@/lib/skate/tier";
 import type { BaseTrick, Stance, Tier } from "@/lib/skate/types";
@@ -42,11 +42,6 @@ const STANCE_LABEL: Record<Stance, string> = {
   switch: "Switch",
   nollie: "Nollie",
 };
-
-/** Same thresholds as preset.ts: <=3 beginner, <=5 intermediate, else advanced. */
-function baseTier(base: BaseTrick): Tier {
-  return base.base <= 3 ? "beginner" : base.base <= 5 ? "intermediate" : "advanced";
-}
 
 function baseLabel(base: BaseTrick): string {
   return base.dir === "required" ? `FS/BS ${base.name}` : base.name;
@@ -174,7 +169,7 @@ export const SettingsSheet = forwardRef<BottomSheetModal, Props>(function Settin
         <Section title={`${domainId === "flatground" ? "Flat" : "Ledge"} tricks`}>
           <Animated.View style={[styles.groups, baseStyle]}>
             {TIERS.map((tier) => {
-              const bases = domain.bases.filter((b) => baseTier(b) === tier);
+              const bases = domain.bases.filter((b) => baseTier(b.base) === tier);
               if (bases.length === 0) return null;
               return (
                 <View key={tier} style={styles.group}>

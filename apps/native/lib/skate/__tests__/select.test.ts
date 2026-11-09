@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { enumerate } from "@/lib/skate/enumerate";
-import { buildPool, pick, poolStats, RECENT_WINDOW } from "@/lib/skate/select";
+import { buildPool, pick, RECENT_WINDOW } from "@/lib/skate/select";
 import type { Domain, DomainSettings, Trick } from "@/lib/skate/types";
 
 const DOMAIN: Domain = {
@@ -99,12 +99,5 @@ describe("pick history window", () => {
 
   it("exports a window constant", () => {
     expect(RECENT_WINDOW).toBe(8);
-  });
-});
-
-describe("poolStats", () => {
-  it("counts tricks by tier", () => {
-    const s = poolStats([trick("a", 1), trick("b", 4), trick("c", 6), trick("d", 10)]);
-    expect(s).toEqual({ count: 4, byTier: { beginner: 2, intermediate: 1, advanced: 1 } });
   });
 });

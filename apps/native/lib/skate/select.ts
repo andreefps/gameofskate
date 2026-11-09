@@ -12,13 +12,6 @@ export function buildPool(domain: Domain, settings: DomainSettings): Trick[] {
 /** Suggested length of the recent-trick history to pass to `pick`. */
 export const RECENT_WINDOW = 8;
 
-/** Pool size and per-tier counts (for settings UI). */
-export function poolStats(pool: Trick[]): { count: number; byTier: Record<Tier, number> } {
-  const byTier: Record<Tier, number> = { beginner: 0, intermediate: 0, advanced: 0 };
-  for (const t of pool) byTier[tierOf(t.difficulty)]++;
-  return { count: pool.length, byTier };
-}
-
 /**
  * Weighted-random pick from a pool. Easier tricks are weighted more heavily
  * (harder = rarer). Excludes the most recent ids (`recentIds` is most-recent-first),

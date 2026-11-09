@@ -5,7 +5,7 @@ import {
   BottomSheetTextInput,
   type BottomSheetBackdropProps,
 } from "@gorhom/bottom-sheet";
-import { forwardRef, useRef, useState } from "react";
+import { forwardRef, useEffect, useRef, useState } from "react";
 import { Platform, StyleSheet, Text, TextInput, View, type ViewStyle } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -33,11 +33,14 @@ function SetupForm({ initialNames, onStart }: Pick<Props, "initialNames" | "onSt
 
   const setName = (i: number, value: string) => setNames((n) => n.map((x, idx) => (idx === i ? value : x)));
   const remove = (i: number) => setNames((n) => n.filter((_, idx) => idx !== i));
-  const add = () => {
-    setNames((n) => [...n, ""]);
-    // Focus the new row once it has mounted.
-    setTimeout(() => inputs.current[names.length]?.focus(), 50);
-  };
+  const add = () => setNames((n) => [...n, ""]);
+
+  // Focus the new row once it has mounted (driven by the list growing, so rapid taps focus the right row).
+  const prevCount = useRef(names.length);
+  useEffect(() => {
+    if (names.length > prevCount.current) inputs.current[names.length - 1]?.focus();
+    prevCount.current = names.length;
+  }, [names.length]);
   const submit = () => onStart(names.map((n) => n.trim()));
 
   return (

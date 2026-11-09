@@ -15,6 +15,9 @@ export type GameState = {
   turn: number;
   winner: number | null;
 };
+/** Undo states kept when persisting (memory keeps up to HISTORY_CAP). */
+export const PERSIST_HISTORY = 8;
+
 export type Game = { present: GameState; past: GameState[] };
 export type GameAction =
   | { type: "result"; landed: boolean }
@@ -202,4 +205,9 @@ export function hydrateGame(raw: unknown): Game | null {
     past.push(s);
   }
   return { present, past };
+}
+
+/** Persisted form of a game: keeps only the last `keep` undo states to bound storage size. */
+export function trimForPersist(game: Game, keep = PERSIST_HISTORY): Game {
+  return game.past.length <= keep ? game : { ...game, past: game.past.slice(-keep) };
 }

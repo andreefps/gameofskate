@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { createGame, gameReducer, type Game } from "@/lib/skate/game";
-import { playerLabel, standings, turnLine } from "@/lib/skate/standings";
+import { playerLabel, standings, turnAnnouncement, turnLine } from "@/lib/skate/standings";
 
 const run = (g: Game, ...r: boolean[]) => r.reduce((x, landed) => gameReducer(x, { type: "result", landed }), g);
 
@@ -46,5 +46,14 @@ describe("playerLabel", () => {
       "Ana, no letters, up now",
     );
     expect(playerLabel({ id: "p1", name: "Ana", letters: 5, landed: 0 }, "SKATE", { out: true })).toContain("out");
+  });
+});
+
+describe("turnAnnouncement", () => {
+  it("speaks setter, matcher and solo trick", () => {
+    const g = createGame(["Ana", "Bruno"]);
+    expect(turnAnnouncement(g.present)).toBe("Ana sets");
+    expect(turnAnnouncement(run(g, true).present)).toBe("Bruno, match it");
+    expect(turnAnnouncement(createGame(["Solo"]).present)).toBe("Trick 1");
   });
 });

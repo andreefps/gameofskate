@@ -5,7 +5,7 @@ import { turnLine } from "@/lib/skate/standings";
 import { useTheme } from "@/theme/theme-provider";
 import { fonts } from "@/theme/tokens";
 
-/** "ANA SETS" / "BRUNO — MATCH IT" / "TRICK 7". */
+/** "ANA SETS" / "BRUNO — MATCH IT" / "TRICK 7". Visual only; PlayersStrip announces turn changes. */
 export function TurnLine({ state }: { state: GameState }) {
   const { colors } = useTheme();
   const { lead, rest } = turnLine(state);

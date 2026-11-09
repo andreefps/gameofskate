@@ -1,6 +1,8 @@
 import { useEffect } from "react";
 import { Platform } from "react-native";
 
+import { shouldSkipHotkey } from "@/lib/hotkey-target";
+
 type Handler = (event: KeyboardEvent) => void;
 
 /**
@@ -16,12 +18,15 @@ export function useHotkeys(bindings: Record<string, Handler>, enabled = true): v
       // Ctrl/Cmd combos are looked up as "mod+<key>" (e.g. "mod+z").
       const mod = event.metaKey || event.ctrlKey;
       const target = event.target as HTMLElement | null;
-      const tag = target?.tagName;
-      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || target?.isContentEditable) return;
-      // Let a focused button handle its own Space/Enter activation.
-      if (target?.getAttribute?.("role") === "button" && (event.key === " " || event.key === "Enter")) {
-        if (target !== document.body) return;
-      }
+      if (
+        shouldSkipHotkey(
+          target && { tag: target.tagName, role: target.getAttribute?.("role"), editable: target.isContentEditable },
+          event.key,
+        )
+      )
+        return;
+      // Undo only: Cmd/Ctrl+Shift+Z is redo and must not trigger it.
+      if (mod && event.shiftKey && event.key.toLowerCase() === "z") return;
       const handler = bindings[mod ? `mod+${event.key.toLowerCase()}` : event.key];
       if (handler) {
         event.preventDefault();

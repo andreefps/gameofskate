@@ -30,3 +30,12 @@ export function playerLabel(p: Player, word: string, opts: { actor?: boolean; ou
   const base = p.letters === 0 ? `${p.name}, no letters` : `${p.name}, ${p.letters} ${p.letters === 1 ? "letter" : "letters"}, ${earned}`;
   return base + (opts.out ? ", out" : opts.actor ? ", up now" : "");
 }
+
+/** Spoken turn description: "Ana sets" / "Bruno, match it" / "Trick 7". */
+export function turnAnnouncement(state: GameState): string {
+  if (state.players.length === 1) return `Trick ${state.turn}`;
+  const who = actor(state);
+  if (who === null) return "";
+  const name = state.players[who]!.name;
+  return state.phase === "set" ? `${name} sets` : `${name}, match it`;
+}

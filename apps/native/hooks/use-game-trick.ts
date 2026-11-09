@@ -22,7 +22,8 @@ export function useGameTrick({ pool, current, rollQuiet, show }: TrickCaller): v
     const first = lastTurn.current === null;
     lastTurn.current = turn;
     const remembered = trickByTurn[turn] ?? (first ? trickId : null);
-    if (remembered && show(remembered)) return;
+    // Initial resume after reload restores the trick without replaying the reveal.
+    if (remembered && show(remembered, { animate: !first })) return;
     rollQuiet();
   }, [turn, pool, trickByTurn, trickId, show, rollQuiet]);
 

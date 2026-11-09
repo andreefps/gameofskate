@@ -35,10 +35,10 @@ export default function CallerScreen() {
   const { settings, dispatch } = useSettings();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
-  const caller = useTrickCaller();
-  const { pool, current, recent, roll, rollToken } = caller;
   const gameStore = useGame();
   const { game } = gameStore;
+  const caller = useTrickCaller({ lock: game?.present.phase === "match" });
+  const { pool, current, recent, roll, rollToken, animate } = caller;
   useGameTrick(caller);
   const sheetRef = useRef<BottomSheetModal>(null);
   const setupRef = useRef<BottomSheetModal>(null);
@@ -92,6 +92,7 @@ export default function CallerScreen() {
         <View style={styles.spot}>
           <Segmented
             size="sm"
+            disabled={game?.present.phase === "match"}
             options={SPOTS}
             value={settings.activeDomain}
             onChange={(domain) => dispatch({ type: "setActiveDomain", domain })}
@@ -118,6 +119,7 @@ export default function CallerScreen() {
               trick={current}
               poolSize={pool.length}
               rollToken={rollToken}
+              animate={animate}
               maxSize={wide ? 150 : 104}
               hapticsEnabled={settings.hapticsEnabled}
               onRoll={roll}

@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 
-import { createGame, gameReducer, hydrateGame, MAX_PLAYERS, type Game } from "@/lib/skate/game";
+import { createGame, gameReducer, hydrateGame, MAX_PLAYERS, trimForPersist, type Game } from "@/lib/skate/game";
 import {
   forgetAfter,
   hydrateNames,
@@ -56,7 +56,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const [lastNames, setLastNames] = useState<string[]>(initNames);
 
   useEffect(() => {
-    save(GAME_KEY, state);
+    save(GAME_KEY, state.game ? { ...state, game: trimForPersist(state.game) } : state);
   }, [state]);
 
   const withGame = (fn: (g: Game, s: Persisted) => Persisted) =>

@@ -11,6 +11,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { GameProvider } from "@/stores/game";
+import { installFlushOnExit } from "@/stores/persist";
 import { SettingsProvider } from "@/stores/settings";
 import { ThemeProvider } from "@/theme/theme-provider";
 
@@ -27,6 +28,8 @@ export default function Layout() {
     DMSans_600SemiBold,
     DMSans_700Bold,
   });
+
+  useEffect(() => installFlushOnExit(), []);
 
   useEffect(() => {
     if (fontsLoaded) void SplashScreen.hideAsync();

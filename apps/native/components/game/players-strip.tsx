@@ -10,7 +10,7 @@ import Animated, {
 
 import { Letters } from "@/components/game/letters";
 import { actor, isOut, WORD, type GameState, type Player } from "@/lib/skate/game";
-import { playerLabel } from "@/lib/skate/standings";
+import { playerLabel, turnAnnouncement } from "@/lib/skate/standings";
 import { useTheme } from "@/theme/theme-provider";
 import { fonts, radius } from "@/theme/tokens";
 
@@ -60,25 +60,38 @@ function PlayerCard({ player, isActor, isSetter, width }: CardProps) {
   );
 }
 
-/** Polite live region + iOS announcement when someone takes a letter. */
-function useLetterAnnouncement(players: Player[]): string {
+/** Letter message for the first player whose letter count rose, or "". */
+function letterMessage(before: Player[], players: Player[]): string {
+  const gained = players.findIndex((p, i) => p.letters > before[i]!.letters);
+  if (gained < 0) return "";
+  const p = players[gained]!;
+  const letter = WORD[p.letters - 1]!;
+  // Article follows the spoken letter name: "an S", "a K", "an A", "a T", "an E".
+  const article = "SAE".includes(letter) ? "an" : "a";
+  return `${p.name} takes ${article} ${letter}${isOut(p) ? ". Out" : ""}`;
+}
+
+/** Polite live region + iOS announcement for letters taken and turn changes. */
+function useGameAnnouncement(state: GameState): string {
   const [message, setMessage] = useState("");
-  const prev = useRef(players);
+  const prev = useRef(state);
+  const flip = useRef(false);
 
   useEffect(() => {
     const before = prev.current;
-    prev.current = players;
-    if (before.length !== players.length) return;
-    const gained = players.findIndex((p, i) => p.letters > before[i]!.letters);
-    if (gained < 0) return;
-    const p = players[gained]!;
-    const letter = WORD[p.letters - 1]!;
-    // Article follows the spoken letter name: "an S", "a K", "an A", "a T", "an E".
-    const article = "SAE".includes(letter) ? "an" : "a";
-    const text = `${p.name} takes ${article} ${letter}${isOut(p) ? ". Out" : ""}`;
-    setMessage(text);
+    prev.current = state;
+    const sameRoster = before.players.length === state.players.length;
+    const letters = sameRoster ? letterMessage(before.players, state.players) : "";
+    const turnChanged =
+      before.turn !== state.turn || before.phase !== state.phase || actor(before) !== actor(state);
+    const turn = turnChanged && state.phase !== "over" ? turnAnnouncement(state) : "";
+    const text = [letters, turn].filter(Boolean).join(". ");
+    if (!text) return;
+    // Alternate a trailing zero-width space so an identical message is announced again.
+    flip.current = !flip.current;
+    setMessage(flip.current ? text : `${text}\u200B`);
     if (Platform.OS === "ios") AccessibilityInfo.announceForAccessibility(text);
-  }, [players]);
+  }, [state]);
 
   return message;
 }
@@ -86,7 +99,7 @@ function useLetterAnnouncement(players: Player[]): string {
 export function PlayersStrip({ state }: { state: GameState }) {
   const { players } = state;
   const [width, setWidth] = useState(0);
-  const message = useLetterAnnouncement(players);
+  const message = useGameAnnouncement(state);
 
   const current = actor(state);
   const showSet = players.length > 1 && state.phase !== "over";

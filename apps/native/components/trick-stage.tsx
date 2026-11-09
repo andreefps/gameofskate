@@ -22,6 +22,8 @@ type Props = {
   trick: Trick | null;
   poolSize: number;
   rollToken: number;
+  /** False to render the trick without the reveal (resume). */
+  animate?: boolean;
   maxSize: number;
   hapticsEnabled: boolean;
   onRoll: () => void;
@@ -55,6 +57,7 @@ export function TrickStage({
   trick,
   poolSize,
   rollToken,
+  animate = true,
   maxSize,
   hapticsEnabled,
   onRoll,
@@ -99,13 +102,15 @@ export function TrickStage({
       disabled={!interactive}
       accessible={interactive ? undefined : false}
       accessibilityRole={interactive ? "button" : undefined}
-      accessibilityLabel={interactive ? "Call a trick" : undefined}
+      accessibilityLabel={
+        interactive ? (trick ? `${trick.name}. Double tap for next trick` : "Call a trick") : trick?.name
+      }
       style={styles.stage}
     >
       <View style={styles.inner} onLayout={onLayout}>
         {ready ? (
           <View key={trick ? `t${rollToken}` : "empty"}>
-            <RevealFade wordCount={words.length} animate={!!trick}>
+            <RevealFade wordCount={words.length} animate={!!trick && animate}>
               <DifficultyMeta rank={rank} label={metaLabel} lead={turnLine} />
             </RevealFade>
             <TrickName
@@ -113,12 +118,12 @@ export function TrickStage({
               fontSize={fontSize}
               lineHeight={lineHeight}
               color={trick ? colors.ink : colors.ghost}
-              animate={!!trick}
-              haptics={hapticsEnabled}
+              animate={!!trick && animate}
+              haptics={hapticsEnabled && interactive}
             />
             <View style={styles.aliasSlot}>
               {trick?.alias ? (
-                <RevealFade wordCount={words.length}>
+                <RevealFade wordCount={words.length} animate={animate}>
                   <Text style={[styles.alias, { color: colors.inkMuted }]}>aka {trick.alias}</Text>
                 </RevealFade>
               ) : null}
