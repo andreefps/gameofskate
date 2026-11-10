@@ -6,7 +6,7 @@ import {
   type BottomSheetBackdropProps,
 } from "@gorhom/bottom-sheet";
 import { forwardRef, useEffect, useRef, useState } from "react";
-import { Platform, StyleSheet, Text, TextInput, View, type ViewStyle } from "react-native";
+import { Platform, StyleSheet, Text, TextInput, View, type TextInputInstance, type ViewStyle } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Button } from "@/components/ui/button";
@@ -29,7 +29,7 @@ function SetupForm({ initialNames, onStart }: Pick<Props, "initialNames" | "onSt
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const [names, setNames] = useState(() => (initialNames.length > 0 ? initialNames : ["", ""]));
-  const inputs = useRef<(TextInput | null)[]>([]);
+  const inputs = useRef<(TextInputInstance | null)[]>([]);
 
   const setName = (i: number, value: string) => setNames((n) => n.map((x, idx) => (idx === i ? value : x)));
   const remove = (i: number) => setNames((n) => n.filter((_, idx) => idx !== i));
@@ -57,7 +57,7 @@ function SetupForm({ initialNames, onStart }: Pick<Props, "initialNames" | "onSt
           {names.map((name, i) => (
             <View key={i} style={styles.row}>
               <NameInput
-                ref={(el: TextInput | null | undefined) => {
+                ref={(el: TextInputInstance | null) => {
                   inputs.current[i] = el ?? null;
                 }}
                 value={name}

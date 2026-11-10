@@ -27,7 +27,7 @@ A fast, minimal skate trick generator. Pull out your phone, tap, go skate it.
 
 ## Tech stack
 
-- [Expo](https://expo.dev) SDK 56, React Native 0.85, React 19 (React Compiler)
+- [Expo](https://expo.dev) SDK 58, React Native 0.88, React 19 (React Compiler)
 - [expo-router](https://docs.expo.dev/router/introduction/), react-native-web
 - [Reanimated](https://docs.swmansion.com/react-native-reanimated/) 4,
   gesture-handler, [@gorhom/bottom-sheet](https://gorhom.dev/react-native-bottom-sheet/)
