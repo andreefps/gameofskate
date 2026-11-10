@@ -11,6 +11,7 @@ import { TurnLine } from "@/components/game/turn-line";
 import { Header } from "@/components/header";
 import { SettingsSheet } from "@/components/settings-sheet";
 import { TrickStage } from "@/components/trick-stage";
+import { SwipeHint } from "@/components/swipe-hint";
 import { Button } from "@/components/ui/button";
 import { Segmented } from "@/components/ui/segmented";
 import { useGameTrick } from "@/hooks/use-game-trick";
@@ -42,19 +43,20 @@ export default function CallerScreen() {
   const gameStore = useGame();
   const { game } = gameStore;
   const caller = useTrickCaller({ lock: game?.present.phase === "match" });
-  const { pool, current, recent, roll, rollToken, animate } = caller;
+  const { pool, current, recent, roll, back, canBack, direction, rollToken, animate } = caller;
   useGameTrick(caller);
   const sheetRef = useRef<BottomSheetModal>(null);
   const setupRef = useRef<BottomSheetModal>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [setupOpen, setSetupOpen] = useState(false);
+  const [swiped, setSwiped] = useState(false);
   const sheetOpen = settingsOpen || setupOpen;
 
   const wide = width >= WIDE_BREAKPOINT;
   const gutter = wide ? 24 : 20;
   const empty = pool.length === 0;
 
-  useHotkeys({ " ": roll, Enter: roll }, !game && !sheetOpen && !empty);
+  useHotkeys({ " ": roll, Enter: roll, ArrowRight: roll, ArrowLeft: back }, !game && !sheetOpen && !empty);
 
   const openSettings = () => sheetRef.current?.present();
   const openSetup = () => setupRef.current?.present();
@@ -134,6 +136,10 @@ export default function CallerScreen() {
               maxSize={wide ? 150 : 104}
               hapticsEnabled={settings.hapticsEnabled}
               onRoll={roll}
+              onBack={back}
+              canBack={canBack}
+              direction={direction}
+              onSwipe={() => setSwiped(true)}
               onOpenSettings={openSettings}
               interactive={!state}
               turnLine={state ? <TurnLine state={state} /> : undefined}
@@ -159,14 +165,7 @@ export default function CallerScreen() {
                   ) : null}
                 </View>
 
-                <Button
-                  size="lg"
-                  variant="primary"
-                  icon="shuffle"
-                  label={current ? "Next trick" : "Call trick"}
-                  disabled={empty}
-                  onPress={roll}
-                />
+                <SwipeHint hidden={swiped || empty} />
               </>
             )}
           </>

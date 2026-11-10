@@ -6,9 +6,10 @@ A fast, minimal skate trick generator. Pull out your phone, tap, go skate it.
 
 ## Features
 
-- **Tap to call** — one big, readable trick name (sized to fit, one word per
-  line) with a quick staggered reveal and haptics. Tap the stage, the button, or
-  press <kbd>Space</kbd> on web.
+- **Swipe to call** — one big, readable trick name (sized to fit, one word per
+  line) with a quick staggered reveal and haptics. Swipe left (or tap) for the
+  next trick, swipe right to go back to the previous one. On web:
+  <kbd>→</kbd> / <kbd>Space</kbd> next, <kbd>←</kbd> back.
 - **Correct names** — tricks are generated from stance × base trick × direction
   (e.g. _Nollie Backside 360 Shuvit_), with well-known aliases (_Half Cab_,
   _Tre Flip_) and naming rules (a nollie ollie is just a _Nollie_).
@@ -59,6 +60,7 @@ The logic is pure TypeScript in `apps/native/lib/`, unit-tested in isolation:
 - `skate/enumerate.ts` — expands components into every valid, named,
   difficulty-scored trick, including aliases.
 - `skate/select.ts` — weighted pick that avoids recent tricks.
+- `skate/deck.ts` — back/forward history behind the swipe.
 - `skate/preset.ts`, `skate/settings.ts` — level presets and the settings reducer.
 - `skate/game.ts` — the Game of S.K.A.T.E. state machine (sets, matches,
   letters, elimination, solo, undo, rematch).
