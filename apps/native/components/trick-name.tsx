@@ -13,7 +13,8 @@ import { scheduleOnRN } from "react-native-worklets";
 
 import { impactMedium, selectionTick } from "@/lib/haptics";
 import { CHAR_WIDTH_EM } from "@/lib/ui/fit-hero";
-import { pickFillers, reelPlan } from "@/lib/ui/reel";
+import type { Slot, SlotKind } from "@/lib/skate/slots";
+import { fillerCandidates, pickFillers, reelPlan } from "@/lib/ui/reel";
 import { fonts } from "@/theme/tokens";
 
 export const WORD_DURATION = 220;
@@ -80,6 +81,7 @@ const TICK_THROTTLE_MS = 40;
 function Reel({
   final,
   fillers,
+  lineCount,
   duration,
   fontSize,
   lineHeight,
@@ -87,23 +89,28 @@ function Reel({
   isLast,
   haptics,
 }: {
-  final: string;
-  fillers: string[];
+  final: string[];
+  /** Each filler is the words of one candidate value, one per line. */
+  fillers: string[][];
+  /** Lines this slot occupies (its word count). */
+  lineCount: number;
   duration: number;
   fontSize: number;
   lineHeight: number;
   color: string;
-  /** The longest reel drives the haptic ticks and the landing thump. */
+  /** The last slot drives the running ticks and the landing thump; earlier ones tick lightly. */
   isLast: boolean;
   haptics: boolean;
 }) {
   const progress = useSharedValue(0);
   const lastTick = useSharedValue(0);
   const rows = fillers.length + 1;
+  const itemHeight = lineCount * lineHeight;
 
   useEffect(() => {
     progress.value = withTiming(1, { duration, easing: EASE }, (finished) => {
-      if (finished && isLast && haptics) scheduleOnRN(impactMedium);
+      if (!finished || !haptics) return;
+      scheduleOnRN(isLast ? impactMedium : selectionTick);
     });
   }, [duration, isLast, haptics, progress]);
 
@@ -118,22 +125,26 @@ function Reel({
     },
   );
 
-  // Column starts one line below the mask and scrolls up until the final word sits in it.
+  // Column starts one item below the mask and scrolls up until the final value sits in it.
   const style = useAnimatedStyle(() => ({
-    transform: [{ translateY: lineHeight - progress.value * rows * lineHeight }],
+    transform: [{ translateY: itemHeight - progress.value * rows * itemHeight }],
   }));
 
   return (
-    <View style={{ height: lineHeight, overflow: "hidden" }}>
+    <View style={{ height: itemHeight, overflow: "hidden" }}>
       <Animated.View style={style}>
-        {[...fillers, final].map((text, i) => (
-          <Text
-            key={i}
-            numberOfLines={1}
-            style={[styles.word, { fontSize, lineHeight, height: lineHeight, color }]}
-          >
-            {text}
-          </Text>
+        {[...fillers, final].map((words, i) => (
+          <View key={i} style={{ height: itemHeight }}>
+            {words.map((text, j) => (
+              <Text
+                key={j}
+                numberOfLines={1}
+                style={[styles.word, { fontSize, lineHeight, height: lineHeight, color }]}
+              >
+                {text}
+              </Text>
+            ))}
+          </View>
         ))}
       </Animated.View>
     </View>
@@ -143,22 +154,22 @@ function Reel({
 export type SpinConfig = {
   /** 0..1 flick strength; longer spin for harder flicks. */
   strength: number;
-  /** Tricks whose name words become reel fillers. */
-  pool: readonly { name: string }[];
+  /** The trick's semantic slots, in stop order (stance, direction, rotation, trick). */
+  slots: Slot[];
+  /** Filler values per slot kind. */
+  vocab: Record<SlotKind, string[]>;
   /** Stage width: fillers wider than this at the current font size are skipped. */
   maxWidth: number;
 };
 
-/** Slot-machine variant: each line is a reel that decelerates onto its word, cascading top to bottom. */
+/** Slot-machine variant: one reel per slot, each decelerating onto its value in reading order. */
 function SpinName({
-  words,
   fontSize,
   lineHeight,
   color,
   haptics,
   spin,
 }: {
-  words: string[];
   fontSize: number;
   lineHeight: number;
   color: string;
@@ -167,27 +178,31 @@ function SpinName({
 }) {
   // Once per spin: the parent re-keys per rollToken, so the initializer runs per roll.
   const [reels] = useState(() => {
-    const plan = reelPlan(words.length, spin.strength);
-    const candidates = spin.pool.flatMap((t) => t.name.toUpperCase().split(" "));
+    const plan = reelPlan(spin.slots.length, spin.strength);
     const maxChars = Math.floor(spin.maxWidth / (fontSize * CHAR_WIDTH_EM));
-    return words.map((word, i) => ({
-      fillers: pickFillers(candidates, word, plan.fillerCounts[i], maxChars),
-      duration: plan.durations[i],
-    }));
+    return spin.slots.map((slot, i) => {
+      const final = slot.words.join(" ");
+      const candidates = fillerCandidates(spin.vocab[slot.kind], slot.words.length, maxChars);
+      return {
+        fillers: pickFillers(candidates, final, plan.fillerCounts[i]).map((f) => f.split(" ")),
+        duration: plan.durations[i],
+      };
+    });
   });
 
   return (
     <View>
-      {words.map((word, i) => (
+      {spin.slots.map((slot, i) => (
         <Reel
           key={i}
-          final={word}
+          final={slot.words}
           fillers={reels[i].fillers}
+          lineCount={slot.words.length}
           duration={reels[i].duration}
           fontSize={fontSize}
           lineHeight={lineHeight}
           color={color}
-          isLast={i === words.length - 1}
+          isLast={i === spin.slots.length - 1}
           haptics={haptics}
         />
       ))}
@@ -222,7 +237,7 @@ export function TrickName({ words, fontSize, lineHeight, color, animate = true, 
 
   if (spinning) {
     return (
-      <SpinName words={words} fontSize={fontSize} lineHeight={lineHeight} color={color} haptics={haptics} spin={spin} />
+      <SpinName fontSize={fontSize} lineHeight={lineHeight} color={color} haptics={haptics} spin={spin} />
     );
   }
 

@@ -16,6 +16,8 @@ import { Button } from "@/components/ui/button";
 import { selectionTick } from "@/lib/haptics";
 import { fitHero } from "@/lib/ui/fit-hero";
 import { reelPlan, SPIN_DEFAULT_STRENGTH, spinStrength } from "@/lib/ui/reel";
+import { DOMAINS } from "@/lib/skate/domains";
+import { slotVocab, trickSlots } from "@/lib/skate/slots";
 import { tierOf, tierRank } from "@/lib/skate/tier";
 import type { Tier, Trick } from "@/lib/skate/types";
 import { useTheme } from "@/theme/theme-provider";
@@ -39,8 +41,6 @@ const EMPTY_WORDS = ["SWIPE", "UP", "TO SPIN"];
 
 type Props = {
   trick: Trick | null;
-  /** Current pool; its name words are the spin fillers. */
-  pool: readonly Trick[];
   poolSize: number;
   rollToken: number;
   /** False to render the trick without the reveal (resume). */
@@ -83,7 +83,6 @@ function DifficultyMeta({ rank, label, lead }: { rank: number; label: string; le
 
 export function TrickStage({
   trick,
-  pool,
   poolSize,
   rollToken,
   animate = true,
@@ -222,7 +221,8 @@ export function TrickStage({
   const ready = size.width > 0;
   const spinning = interactive && !reduceMotion && animate && !!trick && direction === 1;
   const strength = pending.token === rollToken ? pending.strength : SPIN_DEFAULT_STRENGTH;
-  const spinTotal = spinning ? reelPlan(words.length, strength).total : undefined;
+  const slots = spinning && trick ? trickSlots(trick, DOMAINS[trick.domain]) : [];
+  const spinTotal = spinning ? reelPlan(slots.length, strength).total : undefined;
   const rank = trick ? tierRank(tierOf(trick.difficulty)) : 0;
   const metaLabel = trick ? TIER_LABEL[tierOf(trick.difficulty)] : `${poolSize} TRICKS IN THE BAG`;
 
@@ -262,7 +262,11 @@ export function TrickStage({
               color={trick ? colors.ink : colors.ghost}
               animate={!!trick && animate}
               haptics={hapticsEnabled && interactive}
-              spin={spinning ? { strength, pool, maxWidth: size.width } : undefined}
+              spin={
+                spinning && trick
+                  ? { strength, slots, vocab: slotVocab(DOMAINS[trick.domain]), maxWidth: size.width }
+                  : undefined
+              }
             />
             <View style={styles.aliasSlot}>
               {trick?.alias ? (

@@ -134,7 +134,6 @@ export default function CallerScreen() {
           <>
             <TrickStage
               trick={current}
-              pool={pool}
               poolSize={pool.length}
               rollToken={rollToken}
               animate={animate}

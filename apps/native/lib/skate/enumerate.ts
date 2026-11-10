@@ -3,7 +3,7 @@ import type { BaseTrick, Dir, Domain, Stance, Trick } from "@/lib/skate/types";
 
 const cache = new WeakMap<Domain, Trick[]>();
 
-const DIR_WORD: Record<Dir, string> = { fs: "Frontside", bs: "Backside" };
+export const DIR_WORD: Record<Dir, string> = { fs: "Frontside", bs: "Backside" };
 
 function composeName(stance: Stance, dir: Dir | undefined, base: BaseTrick): string {
   const override = base.stanceNames?.[stance];
