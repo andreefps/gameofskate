@@ -137,17 +137,19 @@ export function TrickStage({
     transform: [{ translateY: ty.value }],
   }));
 
-  const commitSwipe = (dir: 1 | -1, strength: number) => {
+  // Runs on the JS thread (via scheduleOnRN); plain JS helpers like spinStrength
+  // must not be called from the gesture worklets themselves.
+  const commitSwipe = (dir: 1 | -1, velocityY: number) => {
     const h = latest.current;
     h.onSwipe?.();
     if (dir === -1 && h.canBack && h.onBack) {
       h.onBack();
     } else {
-      setPending({ token: h.rollToken + 1, strength });
+      setPending({ token: h.rollToken + 1, strength: spinStrength(velocityY) });
       h.onRoll();
     }
   };
-  const tapRoll = () => commitSwipe(1, SPIN_DEFAULT_STRENGTH);
+  const tapRoll = () => commitSwipe(1, 0);
   const tick = () => {
     if (latest.current.hapticsEnabled) selectionTick();
   };
@@ -181,7 +183,7 @@ export function TrickStage({
       if (up || (down && canDown)) {
         const dir = up ? 1 : -1;
         ty.value = withTiming(-dir * FLY_DISTANCE, { duration: FLY_MS }, (finished) => {
-          if (finished) scheduleOnRN(commitSwipe, dir, up ? spinStrength(vy) : SPIN_DEFAULT_STRENGTH);
+          if (finished) scheduleOnRN(commitSwipe, dir, up ? vy : 0);
         });
         fade.value = withTiming(0, { duration: FLY_MS });
       } else {
