@@ -20,7 +20,7 @@ const keyboardFirst =
   typeof window.matchMedia === "function" &&
   !window.matchMedia("(pointer: coarse)").matches;
 
-/** Subtle "swipe for next" cue. Keeps its height when hidden so layout never jumps. */
+/** Subtle "swipe up to spin" cue. Keeps its height when hidden so layout never jumps. */
 export function SwipeHint({ hidden }: { hidden: boolean }) {
   const { colors } = useTheme();
   const reduceMotion = useReducedMotion();
@@ -43,7 +43,7 @@ export function SwipeHint({ hidden }: { hidden: boolean }) {
   }, [reduceMotion, hidden, nudge]);
 
   const rowStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
-  const iconStyle = useAnimatedStyle(() => ({ transform: [{ translateX: nudge.value }] }));
+  const iconStyle = useAnimatedStyle(() => ({ transform: [{ translateY: -nudge.value }] }));
 
   return (
     <Animated.View
@@ -53,11 +53,11 @@ export function SwipeHint({ hidden }: { hidden: boolean }) {
       style={[styles.row, rowStyle]}
     >
       <Text style={[styles.text, { color: colors.inkMuted }]}>
-        {keyboardFirst ? "Swipe or press →" : "Swipe for next"}
+        {keyboardFirst ? "Swipe up or press Space" : "Swipe up to spin"}
       </Text>
       {keyboardFirst ? null : (
         <Animated.View style={iconStyle}>
-          <Ionicons name="chevron-forward" size={14} color={colors.inkMuted} />
+          <Ionicons name="chevron-up" size={14} color={colors.inkMuted} />
         </Animated.View>
       )}
     </Animated.View>

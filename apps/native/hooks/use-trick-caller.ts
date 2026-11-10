@@ -18,7 +18,7 @@ export type TrickCaller = {
   /** Step back to the previous trick (replayed by the next `roll`). */
   back: () => void;
   canBack: boolean;
-  /** Roll without the haptic tick (game turns fire their own feedback). Always picks fresh. */
+  /** Roll that always picks fresh and drops forward history (game turns). */
   rollQuiet: () => void;
   /** Show a specific pool trick with the reveal. Returns false if it is not in the pool. */
   show: (id: string, opts?: { animate?: boolean }) => boolean;
@@ -26,7 +26,7 @@ export type TrickCaller = {
   rollToken: number;
   /** False after a quiet `show` (resume): render the trick without the reveal. */
   animate: boolean;
-  /** Direction of the last change: 1 = next, -1 = back. */
+  /** Direction of the last change: 1 = roll (spins in free mode), -1 = back. */
   direction: 1 | -1;
 };
 
@@ -69,15 +69,15 @@ export function useTrickCaller({ lock = false }: { lock?: boolean } = {}): Trick
     setRollToken((t) => t + 1);
   };
 
-  const rollWith = (haptic: boolean) => {
-    const base = haptic ? deck : { ...deck, ahead: [] };
+  const rollWith = (keepAhead: boolean) => {
+    const base = keepAhead ? deck : { ...deck, ahead: [] };
     const next = forward(
       base,
       () => pick(pool, [current, ...history].filter((t): t is Trick => t !== null).map((t) => t.id)),
       limit,
     );
     if (next === deck) return;
-    if (haptic && settings.hapticsEnabled) impactMedium();
+    // No roll-time haptic: the spin (or a game turn) fires its own landing feedback.
     commit(next, 1);
   };
 

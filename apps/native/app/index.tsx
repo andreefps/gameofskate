@@ -56,7 +56,11 @@ export default function CallerScreen() {
   const gutter = wide ? 24 : 20;
   const empty = pool.length === 0;
 
-  useHotkeys({ " ": roll, Enter: roll, ArrowRight: roll, ArrowLeft: back }, !game && !sheetOpen && !empty);
+  useHotkeys(
+    { " ": roll, Enter: roll, ArrowUp: roll, ArrowRight: roll, ArrowDown: back, ArrowLeft: back },
+    !game && !sheetOpen && !empty,
+  );
+
 
   const openSettings = () => sheetRef.current?.present();
   const openSetup = () => setupRef.current?.present();
@@ -130,6 +134,7 @@ export default function CallerScreen() {
           <>
             <TrickStage
               trick={current}
+              pool={pool}
               poolSize={pool.length}
               rollToken={rollToken}
               animate={animate}

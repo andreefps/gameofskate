@@ -1,7 +1,7 @@
 export type HeroFit = { fontSize: number; lineHeight: number };
 
 const MIN_FONT = 40;
-const CHAR_WIDTH_EM = 0.48; // measured ~0.42em avg for uppercase Barlow Condensed 800; margin for wide glyphs (M, W)
+export const CHAR_WIDTH_EM = 0.48; // measured ~0.42em avg for uppercase Barlow Condensed 800; margin for wide glyphs (M, W)
 const LINE_HEIGHT_RATIO = 0.92;
 
 /**

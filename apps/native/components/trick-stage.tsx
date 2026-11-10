@@ -15,6 +15,7 @@ import { RevealFade, TrickName } from "@/components/trick-name";
 import { Button } from "@/components/ui/button";
 import { selectionTick } from "@/lib/haptics";
 import { fitHero } from "@/lib/ui/fit-hero";
+import { reelPlan, SPIN_DEFAULT_STRENGTH, spinStrength } from "@/lib/ui/reel";
 import { tierOf, tierRank } from "@/lib/skate/tier";
 import type { Tier, Trick } from "@/lib/skate/types";
 import { useTheme } from "@/theme/theme-provider";
@@ -26,17 +27,20 @@ const TIER_LABEL: Record<Tier, string> = {
   advanced: "ADVANCED",
 };
 
-const SWIPE_DISTANCE_RATIO = 0.25;
-const SWIPE_VELOCITY = 700;
-const MAX_TILT_DEG = 6;
-const ENTER_OFFSET = 60;
-const FLY_MS = 180;
+const SWIPE_DISTANCE = 60;
+const SWIPE_VELOCITY = 500;
+const DRAG_RESISTANCE = 0.6;
+const RUBBER_BAND = 0.25;
+const FLY_DISTANCE = 120;
+const FLY_MS = 150;
 const SPRING = { damping: 20, stiffness: 220, mass: 0.8 };
 
-const EMPTY_WORDS = ["SWIPE", "TO", "CALL"];
+const EMPTY_WORDS = ["SWIPE", "UP", "TO SPIN"];
 
 type Props = {
   trick: Trick | null;
+  /** Current pool; its name words are the spin fillers. */
+  pool: readonly Trick[];
   poolSize: number;
   rollToken: number;
   /** False to render the trick without the reveal (resume). */
@@ -44,10 +48,10 @@ type Props = {
   maxSize: number;
   hapticsEnabled: boolean;
   onRoll: () => void;
-  /** Previous trick (swipe right / a11y action). */
+  /** Previous trick (swipe down / a11y action). */
   onBack?: () => void;
   canBack?: boolean;
-  /** Direction of the last change: 1 enters from the right, -1 from the left. */
+  /** Direction of the last change: 1 = roll (spins), -1 = back (plain reveal). */
   direction?: 1 | -1;
   /** Fired when a drag commits a trick change. */
   onSwipe?: () => void;
@@ -79,6 +83,7 @@ function DifficultyMeta({ rank, label, lead }: { rank: number; label: string; le
 
 export function TrickStage({
   trick,
+  pool,
   poolSize,
   rollToken,
   animate = true,
@@ -102,51 +107,48 @@ export function TrickStage({
   };
 
   const reduceMotion = useReducedMotion();
-  const tx = useSharedValue(0);
+  const ty = useSharedValue(0);
   const fade = useSharedValue(1);
   const crossed = useSharedValue(false);
+  // Flick strength for the roll about to land, tagged with the token it is for so
+  // rolls that bypass the stage (hotkeys, a11y action) fall back to the default.
+  const [pending, setPending] = useState({ token: -1, strength: SPIN_DEFAULT_STRENGTH });
   // Gesture callbacks are worklets that may outlive this render, so everything they
   // read goes through shared values / a ref instead of closure captures.
-  const widthSV = useSharedValue(1);
-  const canRightSV = useSharedValue(false);
-  const latest = useRef({ onRoll, onBack, onSwipe, canBack, hapticsEnabled });
+  const canDownSV = useSharedValue(false);
+  const latest = useRef({ onRoll, onBack, onSwipe, canBack, hapticsEnabled, rollToken });
   useLayoutEffect(() => {
-    latest.current = { onRoll, onBack, onSwipe, canBack, hapticsEnabled };
-    widthSV.value = size.width || 1;
-    // Right swipe goes back; with no previous trick it rubber-bands, except from the
+    latest.current = { onRoll, onBack, onSwipe, canBack, hapticsEnabled, rollToken };
+    // Down goes back; with no previous trick it rubber-bands, except from the
     // empty state where either direction calls the first trick.
-    canRightSV.value = canBack || !trick;
+    canDownSV.value = canBack || !trick;
   });
 
-  // Every roll/back plays the enter animation from the side it came from.
-  // Layout effect so the new trick never paints at rest first.
+  // Reset the drag offset whenever a new trick lands. Layout effect so it never paints at rest first.
   const lastToken = useRef(rollToken);
   useLayoutEffect(() => {
     if (lastToken.current === rollToken) return;
     lastToken.current = rollToken;
-    if (!interactive || reduceMotion || !animate) {
-      tx.value = 0;
-      fade.value = 1;
-      return;
-    }
-    tx.value = direction * ENTER_OFFSET;
-    fade.value = 0;
-    tx.value = withSpring(0, SPRING);
-    fade.value = withTiming(1, { duration: 220 });
-  }, [rollToken, direction, interactive, reduceMotion, animate, tx, fade]);
+    ty.value = 0;
+    fade.value = 1;
+  }, [rollToken, ty, fade]);
 
   const contentStyle = useAnimatedStyle(() => ({
     opacity: fade.value,
-    transform: [{ translateX: tx.value }, { rotate: `${(tx.value / widthSV.value) * MAX_TILT_DEG}deg` }],
+    transform: [{ translateY: ty.value }],
   }));
 
-  const commitSwipe = (dir: 1 | -1) => {
+  const commitSwipe = (dir: 1 | -1, strength: number) => {
     const h = latest.current;
     h.onSwipe?.();
-    if (dir === -1 && h.canBack && h.onBack) h.onBack();
-    else h.onRoll();
+    if (dir === -1 && h.canBack && h.onBack) {
+      h.onBack();
+    } else {
+      setPending({ token: h.rollToken + 1, strength });
+      h.onRoll();
+    }
   };
-  const tapRoll = () => latest.current.onRoll();
+  const tapRoll = () => commitSwipe(1, SPIN_DEFAULT_STRENGTH);
   const tick = () => {
     if (latest.current.hapticsEnabled) selectionTick();
   };
@@ -154,41 +156,37 @@ export function TrickStage({
   // Reduced motion: no drag at all, tap only.
   const pan = Gesture.Pan()
     .enabled(interactive && !reduceMotion)
-    .activeOffsetX([-10, 10])
-    .failOffsetY([-24, 24])
+    .activeOffsetY([-10, 10])
+    .failOffsetX([-24, 24])
     .onBegin(() => {
       crossed.value = false;
     })
     .onUpdate((e) => {
-      const stageWidth = widthSV.value;
-      const canGoRight = canRightSV.value;
-      const threshold = stageWidth * SWIPE_DISTANCE_RATIO;
-      const dx = e.translationX;
-      const x = dx > 0 && !canGoRight ? dx * 0.25 : dx;
-      tx.value = x;
-      fade.value = 1 - Math.min(Math.abs(x) / stageWidth, 1) * 0.4;
-      const past = Math.abs(dx) > threshold && (dx < 0 || canGoRight);
+      const canDown = canDownSV.value;
+      const dy = e.translationY;
+      const y = dy > 0 && !canDown ? dy * RUBBER_BAND : dy * DRAG_RESISTANCE;
+      ty.value = y;
+      fade.value = 1 - Math.min(Math.abs(y) / 200, 1) * 0.4;
+      const past = dy < -SWIPE_DISTANCE || (dy > SWIPE_DISTANCE && canDown);
       if (past !== crossed.value) {
         crossed.value = past;
         scheduleOnRN(tick);
       }
     })
     .onEnd((e) => {
-      const stageWidth = widthSV.value;
-      const canGoRight = canRightSV.value;
-      const threshold = stageWidth * SWIPE_DISTANCE_RATIO;
-      const dx = e.translationX;
-      const vx = e.velocityX;
-      const left = dx < -threshold || vx < -SWIPE_VELOCITY;
-      const right = dx > threshold || vx > SWIPE_VELOCITY;
-      if (left || (right && canGoRight)) {
-        const dir = left ? 1 : -1;
-        tx.value = withTiming(-dir * stageWidth, { duration: FLY_MS }, (finished) => {
-          if (finished) scheduleOnRN(commitSwipe, dir);
+      const canDown = canDownSV.value;
+      const dy = e.translationY;
+      const vy = e.velocityY;
+      const up = dy < -SWIPE_DISTANCE || vy < -SWIPE_VELOCITY;
+      const down = dy > SWIPE_DISTANCE || vy > SWIPE_VELOCITY;
+      if (up || (down && canDown)) {
+        const dir = up ? 1 : -1;
+        ty.value = withTiming(-dir * FLY_DISTANCE, { duration: FLY_MS }, (finished) => {
+          if (finished) scheduleOnRN(commitSwipe, dir, up ? spinStrength(vy) : SPIN_DEFAULT_STRENGTH);
         });
         fade.value = withTiming(0, { duration: FLY_MS });
       } else {
-        tx.value = withSpring(0, SPRING);
+        ty.value = withSpring(0, SPRING);
         fade.value = withTiming(1, { duration: 150 });
       }
     });
@@ -222,6 +220,9 @@ export function TrickStage({
   const words = trick ? trick.name.toUpperCase().split(" ") : EMPTY_WORDS;
   const { fontSize, lineHeight } = fitHero(words, size.width, size.height, maxSize);
   const ready = size.width > 0;
+  const spinning = interactive && !reduceMotion && animate && !!trick && direction === 1;
+  const strength = pending.token === rollToken ? pending.strength : SPIN_DEFAULT_STRENGTH;
+  const spinTotal = spinning ? reelPlan(words.length, strength).total : undefined;
   const rank = trick ? tierRank(tierOf(trick.difficulty)) : 0;
   const metaLabel = trick ? TIER_LABEL[tierOf(trick.difficulty)] : `${poolSize} TRICKS IN THE BAG`;
 
@@ -234,8 +235,8 @@ export function TrickStage({
         accessibilityLabel={
           interactive
             ? trick
-              ? `${trick.name}. Swipe or double tap for next trick`
-              : "Swipe to call a trick"
+              ? `${trick.name}. Swipe up or double tap for a new trick`
+              : "Swipe up to call a trick"
             : trick?.name
         }
         accessibilityActions={
@@ -251,7 +252,7 @@ export function TrickStage({
       <Animated.View style={[styles.inner, contentStyle]} onLayout={onLayout}>
         {ready ? (
           <View key={trick ? `t${rollToken}` : "empty"}>
-            <RevealFade wordCount={words.length} animate={!!trick && animate}>
+            <RevealFade wordCount={words.length} animate={!!trick && animate} delay={spinTotal}>
               <DifficultyMeta rank={rank} label={metaLabel} lead={turnLine} />
             </RevealFade>
             <TrickName
@@ -261,10 +262,11 @@ export function TrickStage({
               color={trick ? colors.ink : colors.ghost}
               animate={!!trick && animate}
               haptics={hapticsEnabled && interactive}
+              spin={spinning ? { strength, pool, maxWidth: size.width } : undefined}
             />
             <View style={styles.aliasSlot}>
               {trick?.alias ? (
-                <RevealFade wordCount={words.length} animate={animate}>
+                <RevealFade wordCount={words.length} animate={animate} delay={spinTotal}>
                   <Text style={[styles.alias, { color: colors.inkMuted }]}>aka {trick.alias}</Text>
                 </RevealFade>
               ) : null}

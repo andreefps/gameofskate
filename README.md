@@ -7,9 +7,11 @@ A fast, minimal skate trick generator. Pull out your phone, tap, go skate it.
 ## Features
 
 - **Swipe to call** — one big, readable trick name (sized to fit, one word per
-  line) with a quick staggered reveal and haptics. Swipe left (or tap) for the
-  next trick, swipe right to go back to the previous one. On web:
-  <kbd>→</kbd> / <kbd>Space</kbd> next, <kbd>←</kbd> back.
+  line) that spins in like a slot-machine reel, each line landing a beat after
+  the last, with haptics. Swipe up (or tap) to spin a new trick, harder flicks
+  spin longer; swipe down to go back to the previous one. On web:
+  <kbd>↑</kbd> / <kbd>→</kbd> / <kbd>Space</kbd> / <kbd>Enter</kbd> spin,
+  <kbd>↓</kbd> / <kbd>←</kbd> back.
 - **Correct names** — tricks are generated from stance × base trick × direction
   (e.g. _Nollie Backside 360 Shuvit_), with well-known aliases (_Half Cab_,
   _Tre Flip_) and naming rules (a nollie ollie is just a _Nollie_).
