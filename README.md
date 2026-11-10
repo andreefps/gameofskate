@@ -18,7 +18,7 @@ A fast, minimal skate trick generator. Pull out your phone, tap, go skate it.
 - **Flat & Ledge** — flatground tricks or grinds & slides, one tap to switch.
 - **No repeats** — recent tricks are kept out of the next few calls; harder
   tricks come up less often.
-- **Trick bag** — the level button in the corner opens presets (Beginner /
+- **Trick bag** — the filter button in the corner opens presets (Beginner /
   Intermediate / Advanced) and stance/trick toggles to filter what gets called,
   plus haptics and System / Light / Dark theme. Everything persists locally.
 - **Extra: score keeper** — tucked at the bottom of the menu, a pass-and-play
